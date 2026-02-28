@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   Command,
+  FileText,
   Frame,
   LifeBuoy,
   Map,
@@ -26,12 +27,17 @@ import {
 import Link from "next/link"
 
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
   navMain: [
+    {
+      title: "Content",
+      url: "/content",
+      icon: FileText,
+      isActive: false,
+      items: [
+        { title: "All Content", url: "/content" },
+        { title: "New Content", url: "/content/new" },
+      ],
+    },
     {
       title: "Bakominfo",
       url: "#",
@@ -71,7 +77,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser />
       </SidebarFooter>
     </Sidebar>
   )
