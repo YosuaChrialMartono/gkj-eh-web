@@ -11,6 +11,7 @@ import {
   Send,
   Settings2,
   SquareTerminal,
+  Users,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -48,6 +49,16 @@ const data = {
           title: "Title Converter",
           url: "/title-converter",
         },
+      ],
+    },
+    {
+      title: "Pelayan",
+      url: "/pelayan",
+      icon: Users,
+      isActive: false,
+      items: [
+        { title: "Jadwal", url: "/pelayan" },
+        { title: "Kelola Peran", url: "/pelayan/roles" },
       ],
     },
   ],
