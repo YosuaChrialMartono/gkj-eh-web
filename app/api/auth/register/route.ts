@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as RegisterInput
     const data = await register(body)
     const res = NextResponse.json({ user: data.user, accessToken: data.accessToken })
-    res.cookies.set("refresh_token", data.accessToken, {
+    res.cookies.set("refresh_token", data.refreshToken ?? data.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

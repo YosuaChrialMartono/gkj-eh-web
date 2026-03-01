@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     }
     const data = await refreshToken(token)
     const res = NextResponse.json({ user: data.user, accessToken: data.accessToken })
-    res.cookies.set("refresh_token", data.accessToken, {
+    res.cookies.set("refresh_token", data.refreshToken ?? data.accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
