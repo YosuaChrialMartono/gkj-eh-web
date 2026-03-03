@@ -1,5 +1,4 @@
 export * from "./content"
-export * from "./auth"
 export * from "./pelayan"
 
 export interface ApiError {

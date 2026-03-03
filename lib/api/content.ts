@@ -1,4 +1,4 @@
-import { apiClient, authenticatedApiClient } from "./client"
+import { apiClient } from "./client"
 import type {
   Content,
   ContentListItem,
@@ -19,36 +19,34 @@ export async function getContentBySlug(slug: string): Promise<Content> {
 }
 
 export async function getContentList(
-  token: string,
   params?: ContentListParams
 ): Promise<PaginatedResponse<ContentListItem>> {
-  return authenticatedApiClient(token, "/content", {
+  return apiClient("/content", {
     params: params as Record<string, string | number | boolean | undefined>,
   })
 }
 
-export async function getContentById(token: string, id: string): Promise<Content> {
-  return authenticatedApiClient(token, `/content/${id}`)
+export async function getContentById(id: string): Promise<Content> {
+  return apiClient(`/content/${id}`)
 }
 
-export async function createContent(token: string, input: ContentCreateInput): Promise<Content> {
-  return authenticatedApiClient(token, "/content", {
+export async function createContent(input: ContentCreateInput): Promise<Content> {
+  return apiClient("/content", {
     method: "POST",
     body: JSON.stringify(input),
   })
 }
 
 export async function updateContent(
-  token: string,
   id: string,
   input: ContentUpdateInput
 ): Promise<Content> {
-  return authenticatedApiClient(token, `/content/${id}`, {
+  return apiClient(`/content/${id}`, {
     method: "PUT",
     body: JSON.stringify(input),
   })
 }
 
-export async function deleteContent(token: string, id: string): Promise<void> {
-  return authenticatedApiClient(token, `/content/${id}`, { method: "DELETE" })
+export async function deleteContent(id: string): Promise<void> {
+  return apiClient(`/content/${id}`, { method: "DELETE" })
 }

@@ -1,71 +1,40 @@
 "use client"
 
-import { createContext, use, useState, useEffect, useCallback } from "react"
-import type { User } from "@/lib/types"
+import { createContext, useContext, type ReactNode } from "react"
 
-interface AuthContextValue {
-  user: User | null
+interface AuthUser {
+  id: string
+  name: string
+  email: string
+  avatar?: string | null
+}
+
+interface AuthContextType {
   accessToken: string | null
-  isLoading: boolean
+  user: AuthUser | null
+  refreshAuth: () => Promise<boolean>
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
-  refreshAuth: () => Promise<boolean>
+  isAuthenticated: boolean
 }
 
-const AuthContext = createContext<AuthContextValue | null>(null)
+const AuthContext = createContext<AuthContextType | null>(null)
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [accessToken, setAccessToken] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-
-  const refreshAuth = useCallback(async (): Promise<boolean> => {
-    try {
-      const res = await fetch("/api/auth/refresh", { method: "POST" })
-      if (!res.ok) return false
-      const data = await res.json() as { user: User; accessToken: string }
-      setUser(data.user)
-      setAccessToken(data.accessToken)
-      return true
-    } catch {
-      return false
-    }
-  }, [])
-
-  useEffect(() => {
-    refreshAuth().finally(() => setIsLoading(false))
-  }, [refreshAuth])
-
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Login failed" }))
-      throw new Error(err.message ?? "Login failed")
-    }
-    const data = await res.json() as { user: User; accessToken: string }
-    setUser(data.user)
-    setAccessToken(data.accessToken)
-  }, [])
-
-  const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" })
-    setUser(null)
-    setAccessToken(null)
-  }, [])
-
-  return (
-    <AuthContext value={{ user, accessToken, isLoading, login, logout, refreshAuth }}>
-      {children}
-    </AuthContext>
-  )
+export function AuthProvider({ children }: { children: ReactNode }) {
+  return <AuthContext.Provider value={{
+    accessToken: null,
+    user: null,
+    refreshAuth: async () => false,
+    login: async () => {},
+    logout: async () => {},
+    isAuthenticated: false,
+  }}>{children}</AuthContext.Provider>
 }
 
-export function useAuth(): AuthContextValue {
-  const ctx = use(AuthContext)
-  if (!ctx) throw new Error("useAuth must be used within AuthProvider")
-  return ctx
+export function useAuth() {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider")
+  }
+  return context
 }

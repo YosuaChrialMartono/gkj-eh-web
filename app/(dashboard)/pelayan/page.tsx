@@ -1,6 +1,5 @@
 import { Suspense } from "react"
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { Settings } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -23,19 +22,18 @@ function PelayanTableSkeleton() {
   )
 }
 
-async function PelayanTableLoader({ month, token }: { month: string; token: string }) {
+async function PelayanTableLoader({ month }: { month: string }) {
   const [roles, services, persons] = await Promise.all([
-    getRoles(token).catch(() => []),
-    getServices(token, month).catch(() => []),
-    getPersons(token).catch(() => []),
+    getRoles().catch(() => []),
+    getServices(month).catch(() => []),
+    getPersons().catch(() => []),
   ])
 
-  // Fetch assignments for all materialised services in parallel
   const assignmentsByService: Record<string, import("@/lib/types").PelayanAssignment[]> = {}
   if (services.length > 0) {
     const results = await Promise.all(
       services.map(async (svc) => {
-        const assignments = await getAssignments(token, svc.id).catch(() => [])
+        const assignments = await getAssignments(svc.id).catch(() => [])
         return { id: svc.id, assignments }
       })
     )
@@ -58,9 +56,8 @@ async function PelayanTableLoader({ month, token }: { month: string; token: stri
 export default async function PelayanPage({ searchParams }: PelayanPageProps) {
   const sp = await searchParams
   const month = (sp.month as string) ?? new Date().toISOString().slice(0, 7)
-  const token = ((await cookies()).get("refresh_token")?.value) ?? ""
 
-  const services = await getServices(token, month).catch(() => [])
+  const services = await getServices(month).catch(() => [])
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,7 +77,7 @@ export default async function PelayanPage({ searchParams }: PelayanPageProps) {
       </div>
 
       <Suspense fallback={<PelayanTableSkeleton />}>
-        <PelayanTableLoader month={month} token={token} />
+        <PelayanTableLoader month={month} />
       </Suspense>
     </div>
   )

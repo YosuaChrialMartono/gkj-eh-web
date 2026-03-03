@@ -1,4 +1,3 @@
-import { cookies } from "next/headers"
 import { notFound } from "next/navigation"
 import { getContentById } from "@/lib/api/content"
 import { ContentForm } from "@/components/content/content-form"
@@ -9,12 +8,10 @@ interface EditContentPageProps {
 
 export default async function EditContentPage({ params }: EditContentPageProps) {
   const { id } = await params
-  const cookieStore = await cookies()
-  const token = cookieStore.get("refresh_token")?.value ?? ""
 
   let content
   try {
-    content = await getContentById(token, id)
+    content = await getContentById(id)
   } catch {
     notFound()
   }

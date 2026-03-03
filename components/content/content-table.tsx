@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { getContentList } from "@/lib/api/content"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -12,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { DeleteContentDialog } from "./delete-content-dialog"
-import type { ContentListParams, ContentStatus, ContentType } from "@/lib/types"
+import type { ContentListParams, ContentStatus } from "@/lib/types"
 
 interface ContentTableProps {
   params?: ContentListParams
@@ -30,12 +29,9 @@ function formatDate(iso: string | null): string {
 }
 
 export async function ContentTable({ params }: ContentTableProps) {
-  const cookieStore = await cookies()
-  const token = cookieStore.get("refresh_token")?.value ?? ""
-
   let result
   try {
-    result = await getContentList(token, params)
+    result = await getContentList(params)
   } catch {
     return <p className="text-sm text-muted-foreground">Failed to load content.</p>
   }

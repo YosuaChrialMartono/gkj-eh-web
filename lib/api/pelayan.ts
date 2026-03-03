@@ -1,4 +1,4 @@
-import { authenticatedApiClient } from "./client"
+import { apiClient } from "./client"
 import type {
   PelayanRole,
   PelayanPerson,
@@ -11,82 +11,82 @@ import type {
 
 // --- Roles ---
 
-export async function getRoles(token: string): Promise<PelayanRole[]> {
-  return authenticatedApiClient(token, "/pelayan/roles")
+export async function getRoles(): Promise<PelayanRole[]> {
+  return apiClient("/pelayan/roles")
 }
 
-export async function createRole(token: string, input: PelayanRoleInput): Promise<PelayanRole> {
-  return authenticatedApiClient(token, "/pelayan/roles", {
+export async function createRole(input: PelayanRoleInput): Promise<PelayanRole> {
+  return apiClient("/pelayan/roles", {
     method: "POST",
     body: JSON.stringify(input),
   })
 }
 
-export async function updateRole(token: string, id: string, input: PelayanRoleInput): Promise<PelayanRole> {
-  return authenticatedApiClient(token, `/pelayan/roles/${id}`, {
+export async function updateRole(id: string, input: PelayanRoleInput): Promise<PelayanRole> {
+  return apiClient(`/pelayan/roles/${id}`, {
     method: "PUT",
     body: JSON.stringify(input),
   })
 }
 
-export async function deleteRole(token: string, id: string): Promise<void> {
-  return authenticatedApiClient(token, `/pelayan/roles/${id}`, { method: "DELETE" })
+export async function deleteRole(id: string): Promise<void> {
+  return apiClient(`/pelayan/roles/${id}`, { method: "DELETE" })
 }
 
 // --- Persons ---
 
-export async function getPersons(token: string): Promise<PelayanPerson[]> {
-  return authenticatedApiClient(token, "/pelayan/persons")
+export async function getPersons(): Promise<PelayanPerson[]> {
+  return apiClient("/pelayan/persons")
 }
 
-export async function createPerson(token: string, name: string): Promise<PelayanPerson> {
-  return authenticatedApiClient(token, "/pelayan/persons", {
+export async function createPerson(name: string): Promise<PelayanPerson> {
+  return apiClient("/pelayan/persons", {
     method: "POST",
     body: JSON.stringify({ name }),
   })
 }
 
-export async function deletePerson(token: string, id: string): Promise<void> {
-  return authenticatedApiClient(token, `/pelayan/persons/${id}`, { method: "DELETE" })
+export async function deletePerson(id: string): Promise<void> {
+  return apiClient(`/pelayan/persons/${id}`, { method: "DELETE" })
 }
 
 // --- Services ---
 
-export async function getServices(token: string, month: string): Promise<PelayanService[]> {
-  return authenticatedApiClient(token, "/pelayan/services", { params: { month } })
+export async function getServices(month: string): Promise<PelayanService[]> {
+  return apiClient("/pelayan/services", { params: { month } })
 }
 
-export async function createService(token: string, input: PelayanServiceInput): Promise<PelayanService> {
-  return authenticatedApiClient(token, "/pelayan/services", {
+export async function createService(input: PelayanServiceInput): Promise<PelayanService> {
+  return apiClient("/pelayan/services", {
     method: "POST",
     body: JSON.stringify(input),
   })
 }
 
-export async function updateService(token: string, id: string, input: PelayanServiceInput): Promise<PelayanService> {
-  return authenticatedApiClient(token, `/pelayan/services/${id}`, {
+export async function updateService(id: string, input: PelayanServiceInput): Promise<PelayanService> {
+  return apiClient(`/pelayan/services/${id}`, {
     method: "PUT",
     body: JSON.stringify(input),
   })
 }
 
-export async function deleteService(token: string, id: string): Promise<void> {
-  return authenticatedApiClient(token, `/pelayan/services/${id}`, { method: "DELETE" })
+export async function deleteService(id: string): Promise<void> {
+  return apiClient(`/pelayan/services/${id}`, { method: "DELETE" })
 }
 
 // --- Assignments ---
 
-export async function getAssignments(token: string, serviceId: string): Promise<PelayanAssignment[]> {
-  return authenticatedApiClient(token, "/pelayan/assignments", { params: { serviceId } })
+export async function getAssignments(serviceId: string): Promise<PelayanAssignment[]> {
+  return apiClient("/pelayan/assignments", { params: { serviceId } })
 }
 
-export async function upsertAssignment(token: string, input: PelayanAssignmentInput): Promise<PelayanAssignment> {
-  return authenticatedApiClient(token, "/pelayan/assignments", {
+export async function upsertAssignment(input: PelayanAssignmentInput): Promise<PelayanAssignment> {
+  return apiClient("/pelayan/assignments", {
     method: "POST",
     body: JSON.stringify(input),
   })
 }
 
-export async function deleteAssignment(token: string, id: string): Promise<void> {
-  return authenticatedApiClient(token, `/pelayan/assignments/${id}`, { method: "DELETE" })
+export async function deleteAssignment(id: string): Promise<void> {
+  return apiClient(`/pelayan/assignments/${id}`, { method: "DELETE" })
 }

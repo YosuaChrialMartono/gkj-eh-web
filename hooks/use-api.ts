@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { useAuth } from "@/lib/auth/auth-context"
 
 interface UseApiState<T> {
   data: T | null
@@ -14,7 +13,6 @@ interface UseApiReturn<T> extends UseApiState<T> {
 }
 
 export function useApi<T = unknown>(): UseApiReturn<T> {
-  const { accessToken, refreshAuth } = useAuth()
   const [state, setState] = useState<UseApiState<T>>({
     data: null,
     isLoading: false,
@@ -25,27 +23,13 @@ export function useApi<T = unknown>(): UseApiReturn<T> {
     async (url: string, options?: RequestInit): Promise<T | null> => {
       setState((s) => ({ ...s, isLoading: true, error: null }))
       try {
-        const makeRequest = async (token: string | null) => {
-          return fetch(url, {
-            ...options,
-            headers: {
-              "Content-Type": "application/json",
-              ...(token ? { Authorization: `Bearer ${token}` } : {}),
-              ...options?.headers,
-            },
-          })
-        }
-
-        let res = await makeRequest(accessToken)
-
-        if (res.status === 401) {
-          const refreshed = await refreshAuth()
-          if (refreshed) {
-            // Re-read the token — refreshAuth updates the context state
-            // We re-execute without the old token; the context will have the new one
-            res = await makeRequest(accessToken)
-          }
-        }
+        const res = await fetch(url, {
+          ...options,
+          headers: {
+            "Content-Type": "application/json",
+            ...options?.headers,
+          },
+        })
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({ message: res.statusText }))
@@ -66,7 +50,7 @@ export function useApi<T = unknown>(): UseApiReturn<T> {
         return null
       }
     },
-    [accessToken, refreshAuth]
+    []
   )
 
   return { ...state, execute }

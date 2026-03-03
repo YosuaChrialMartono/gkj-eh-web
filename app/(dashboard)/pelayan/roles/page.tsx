@@ -1,13 +1,11 @@
 import Link from "next/link"
-import { cookies } from "next/headers"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RoleManager } from "@/components/pelayan/role-manager"
 import { getRoles } from "@/lib/api/pelayan"
 
 export default async function PelayanRolesPage() {
-  const token = ((await cookies()).get("refresh_token")?.value) ?? ""
-  const roles = await getRoles(token).catch(() => [])
+  const roles = await getRoles().catch(() => [])
 
   return (
     <div className="flex flex-col gap-6">
