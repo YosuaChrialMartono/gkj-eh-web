@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import { useEffect, useState } from "react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,7 +20,17 @@ function formatSegment(segment: string): string {
 
 export function DashboardBreadcrumb() {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   const segments = pathname.split("/").filter(Boolean)
+
+  if (!mounted || segments.length === 0) {
+    return null
+  }
 
   if (segments.length === 0) {
     return (

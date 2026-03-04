@@ -7,7 +7,7 @@ import { generateSlug } from "@/lib/slug"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { TiptapEditor } from "@/components/tiptap/editor"
 import {
   Select,
   SelectContent,
@@ -31,7 +31,8 @@ export function ContentForm({ content }: ContentFormProps) {
   const [slug, setSlug] = useState(content?.slug ?? "")
   const [type, setType] = useState<ContentType>(content?.type ?? ContentType.article)
   const [status, setStatus] = useState<ContentStatus>(content?.status ?? ContentStatus.draft)
-  const [body, setBody] = useState(content?.body ?? "")
+  const [bodyJson, setBodyJson] = useState(content?.body ?? "")
+  const [bodyHtml, setBodyHtml] = useState("")
   const [featuredImageUrl, setFeaturedImageUrl] = useState(content?.featuredImageUrl ?? "")
   const [publishedAt, setPublishedAt] = useState(content?.publishedAt?.slice(0, 16) ?? "")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
@@ -55,7 +56,8 @@ export function ContentForm({ content }: ContentFormProps) {
       slug,
       type,
       status,
-      body,
+      body: bodyJson,
+      bodyHtml,
       ...(featuredImageUrl ? { featuredImageUrl } : {}),
       ...(publishedAt ? { publishedAt: new Date(publishedAt).toISOString() } : {}),
     }
@@ -140,12 +142,12 @@ export function ContentForm({ content }: ContentFormProps) {
 
       <div className="flex flex-col gap-2">
         <Label htmlFor="body">Body</Label>
-        {/* TODO: Replace with TipTap or Lexical rich text editor */}
-        <Textarea
-          id="body"
-          value={body}
-          onChange={(e) => setBody(e.target.value)}
-          rows={12}
+        <TiptapEditor
+          content={bodyJson}
+          onChange={(json, html) => {
+            setBodyJson(json)
+            setBodyHtml(html)
+          }}
           placeholder="Write your content here..."
         />
       </div>

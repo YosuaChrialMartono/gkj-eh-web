@@ -18,6 +18,7 @@ export interface Content {
   type: ContentType
   status: ContentStatus
   body: string
+  bodyHtml: string | null
   authorId: string
   authorName: string
   featuredImageUrl: string | null
@@ -46,6 +47,7 @@ export interface ContentCreateInput {
   type: ContentType
   status: ContentStatus
   body: string
+  bodyHtml?: string
   featuredImageUrl?: string
   publishedAt?: string
 }

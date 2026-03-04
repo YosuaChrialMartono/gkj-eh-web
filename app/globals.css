@@ -123,3 +123,60 @@
     @apply bg-background text-foreground;
   }
 }
+
+.tiptap {
+  @apply outline-none min-h-[300px];
+}
+
+.tiptap p {
+  @apply my-2;
+}
+
+.tiptap h1 {
+  @apply text-2xl font-bold my-4;
+}
+
+.tiptap h2 {
+  @apply text-xl font-bold my-3;
+}
+
+.tiptap h3 {
+  @apply text-lg font-semibold my-2;
+}
+
+.tiptap ul,
+.tiptap ol {
+  @apply pl-6 my-2;
+}
+
+.tiptap ul {
+  @apply list-disc;
+}
+
+.tiptap ol {
+  @apply list-decimal;
+}
+
+.tiptap blockquote {
+  @apply border-l-4 border-muted-foreground pl-4 italic my-4;
+}
+
+.tiptap code {
+  @apply bg-muted px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.tiptap pre {
+  @apply bg-muted p-4 rounded-md my-4 overflow-x-auto;
+}
+
+.tiptap pre code {
+  @apply bg-transparent p-0;
+}
+
+.tiptap img {
+  @apply max-w-full h-auto rounded-md my-4;
+}
+
+.tiptap a {
+  @apply text-primary underline;
+}

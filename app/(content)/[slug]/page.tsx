@@ -11,12 +11,15 @@ export async function generateMetadata({ params }: SlugPageProps): Promise<Metad
   const { slug } = await params
   try {
     const content = await getContentBySlug(slug)
+    const description = content.bodyHtml 
+      ? content.bodyHtml.replace(/<[^>]*>/g, "").slice(0, 160)
+      : content.body.slice(0, 160).replace(/\n/g, " ")
     return {
       title: `${content.title} — GKJ Eben Haezer`,
-      description: content.body.slice(0, 160).replace(/\n/g, " "),
+      description,
       openGraph: {
         title: content.title,
-        description: content.body.slice(0, 160).replace(/\n/g, " "),
+        description,
         ...(content.featuredImageUrl ? { images: [content.featuredImageUrl] } : {}),
       },
     }
@@ -73,9 +76,10 @@ export default async function SlugPage({ params }: SlugPageProps) {
         />
       )}
 
-      <div className="prose prose-zinc dark:prose-invert max-w-none whitespace-pre-wrap">
-        {content.body}
-      </div>
+      <div 
+        className="prose prose-zinc dark:prose-invert max-w-none"
+        dangerouslySetInnerHTML={{ __html: content.bodyHtml ?? content.body }}
+      />
     </article>
   )
 }
