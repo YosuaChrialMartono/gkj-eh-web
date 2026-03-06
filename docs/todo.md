@@ -10,14 +10,20 @@
 - [x] Update public rendering to use `bodyHtml`
 - [x] Add image resize support
 - [x] Auto-upload pasted images
+- [x] Backend already has `body_html` column and model support
 
 ## To Do
 
 ### Database
 
-- [ ] Add `body_html` column to content table
-- [ ] Update create content API to store `bodyHtml`
-- [ ] Update update content API to store `bodyHtml`
+- [x] Add `body_html` column to content table (already done in backend)
+- [x] Update create content API to store `bodyHtml` (already done)
+- [x] Update update content API to store `bodyHtml` (already done)
+
+### Auth (TODO Later)
+
+- [ ] Re-enable authentication check in ContentForm (currently bypassed for testing)
+- [ ] Add proper auth redirect to login page when not authenticated
 
 ### Future Enhancements (Not in Scope)
 

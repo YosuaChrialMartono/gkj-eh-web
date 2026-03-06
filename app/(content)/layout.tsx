@@ -20,6 +20,9 @@ export default function ContentLayout({
             <Link href="/sermons" className="text-sm hover:text-foreground/80 transition-colors">
               Khotbah
             </Link>
+            <Link href="/dashboard" className="text-sm hover:text-foreground/80 transition-colors">
+              Dashboard
+            </Link>
             <ColorModeToggle />
           </nav>
         </div>

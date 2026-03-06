@@ -47,7 +47,10 @@ export function ContentForm({ content }: ContentFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!accessToken) return
+    if (!accessToken) {
+      setError("You must be logged in to create content")
+      return
+    }
     setError(null)
     setIsSubmitting(true)
 
@@ -91,7 +94,9 @@ export function ContentForm({ content }: ContentFormProps) {
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">Title</Label>
+        <Label htmlFor="title">
+          Title <span className="text-destructive">*</span>
+        </Label>
         <Input
           id="title"
           value={title}
@@ -101,12 +106,17 @@ export function ContentForm({ content }: ContentFormProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="slug">Slug</Label>
+        <Label htmlFor="slug">
+          Slug <span className="text-muted-foreground text-xs font-normal">(optional)</span>
+        </Label>
         <Input
           id="slug"
           value={slug}
           onChange={(e) => { setSlug(e.target.value); setSlugManuallyEdited(true) }}
         />
+        <p className="text-xs text-muted-foreground">
+          URL-friendly identifier. Auto-generated from title if left empty.
+        </p>
       </div>
 
       <div className="flex gap-4">
@@ -141,7 +151,9 @@ export function ContentForm({ content }: ContentFormProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="body">Body</Label>
+        <Label htmlFor="body">
+          Body <span className="text-destructive">*</span>
+        </Label>
         <TiptapEditor
           content={bodyJson}
           onChange={(json, html) => {

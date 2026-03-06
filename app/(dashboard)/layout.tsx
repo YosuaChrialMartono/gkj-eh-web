@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation"
+import { cookies } from "next/headers"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ColorModeToggle } from "@/components/color-mode-toggle"
 import { Separator } from "@/components/ui/separator"
@@ -8,11 +10,16 @@ import {
 } from "@/components/ui/sidebar"
 import { DashboardBreadcrumb } from "@/components/dashboard-breadcrumb"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const token = (await cookies()).get("refresh_token")?.value
+  if (!token) {
+    redirect("/login?from=/dashboard")
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />

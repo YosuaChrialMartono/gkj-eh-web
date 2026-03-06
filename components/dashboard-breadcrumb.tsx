@@ -28,7 +28,7 @@ export function DashboardBreadcrumb() {
 
   const segments = pathname.split("/").filter(Boolean)
 
-  if (!mounted || segments.length === 0) {
+  if (!mounted) {
     return null
   }
 
@@ -47,22 +47,29 @@ export function DashboardBreadcrumb() {
   return (
     <Breadcrumb>
       <BreadcrumbList>
+        <BreadcrumbItem>
+          <BreadcrumbLink asChild>
+            <Link href="/">Home</Link>
+          </BreadcrumbLink>
+        </BreadcrumbItem>
         {segments.map((segment, index) => {
           const isLast = index === segments.length - 1
           const href = "/" + segments.slice(0, index + 1).join("/")
           const label = formatSegment(segment)
 
           return (
-            <BreadcrumbItem key={href} className={index > 0 ? "hidden md:block" : ""}>
-              {index > 0 && <BreadcrumbSeparator className="hidden md:block" />}
-              {isLast ? (
-                <BreadcrumbPage>{label}</BreadcrumbPage>
-              ) : (
-                <BreadcrumbLink asChild>
-                  <Link href={href}>{label}</Link>
-                </BreadcrumbLink>
-              )}
-            </BreadcrumbItem>
+            <div key={href} className="flex items-center">
+              <BreadcrumbSeparator className="hidden md:block" />
+              <BreadcrumbItem>
+                {isLast ? (
+                  <BreadcrumbPage>{label}</BreadcrumbPage>
+                ) : (
+                  <BreadcrumbLink asChild>
+                    <Link href={href}>{label}</Link>
+                  </BreadcrumbLink>
+                )}
+              </BreadcrumbItem>
+            </div>
           )
         })}
       </BreadcrumbList>

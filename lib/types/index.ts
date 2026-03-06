@@ -1,5 +1,6 @@
 export * from "./content"
 export * from "./pelayan"
+export * from "./auth"
 
 export interface ApiError {
   message: string

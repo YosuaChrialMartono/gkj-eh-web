@@ -177,6 +177,10 @@
   @apply max-w-full h-auto rounded-md my-4;
 }
 
+.tiptap p > img {
+  @apply inline-block align-top;
+}
+
 .tiptap a {
   @apply text-primary underline;
 }
