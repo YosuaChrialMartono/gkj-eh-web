@@ -8,6 +8,7 @@ interface AuthContextValue {
   accessToken: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<boolean>
 }
@@ -51,6 +52,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAccessToken(data.accessToken)
   }, [])
 
+  const register = useCallback(async (name: string, email: string, password: string) => {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Registration failed" }))
+      throw new Error(err.message ?? "Registration failed")
+    }
+    const data = await res.json() as { user: User; accessToken: string }
+    setUser(data.user)
+    setAccessToken(data.accessToken)
+  }, [])
+
   const logout = useCallback(async () => {
     await fetch("/api/auth/logout", { method: "POST" })
     setUser(null)
@@ -58,7 +74,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext value={{ user, accessToken, isLoading, login, logout, refreshAuth }}>
+    <AuthContext value={{ user, accessToken, isLoading, login, register, logout, refreshAuth }}>
       {children}
     </AuthContext>
   )
