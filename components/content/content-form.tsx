@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/auth/auth-context"
 import { generateSlug } from "@/lib/slug"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,7 +22,6 @@ interface ContentFormProps {
 }
 
 export function ContentForm({ content }: ContentFormProps) {
-  const { accessToken } = useAuth()
   const router = useRouter()
   const isEdit = !!content
 
@@ -32,25 +30,30 @@ export function ContentForm({ content }: ContentFormProps) {
   const [type, setType] = useState<ContentType>(content?.type ?? ContentType.article)
   const [status, setStatus] = useState<ContentStatus>(content?.status ?? ContentStatus.draft)
   const [bodyJson, setBodyJson] = useState(content?.body ?? "")
-  const [bodyHtml, setBodyHtml] = useState("")
+  const bodyHtmlRef = useRef("")
   const [featuredImageUrl, setFeaturedImageUrl] = useState(content?.featuredImageUrl ?? "")
   const [publishedAt, setPublishedAt] = useState(content?.publishedAt?.slice(0, 16) ?? "")
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    if (!slugManuallyEdited) {
-      setSlug(generateSlug(title))
-    }
-  }, [title, slugManuallyEdited])
+  const handleTitleChange = useCallback((next: string) => {
+    setTitle(next)
+    setSlug((prev) => (slugManuallyEdited ? prev : generateSlug(next)))
+  }, [slugManuallyEdited])
+
+  const handleSlugChange = useCallback((next: string) => {
+    setSlug(next)
+    setSlugManuallyEdited(true)
+  }, [])
+
+  const handleBodyChange = useCallback((json: string, html: string) => {
+    setBodyJson(json)
+    bodyHtmlRef.current = html
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!accessToken) {
-      setError("You must be logged in to create content")
-      return
-    }
     setError(null)
     setIsSubmitting(true)
 
@@ -60,7 +63,7 @@ export function ContentForm({ content }: ContentFormProps) {
       type,
       status,
       body: bodyJson,
-      bodyHtml,
+      bodyHtml: bodyHtmlRef.current,
       ...(featuredImageUrl ? { featuredImageUrl } : {}),
       ...(publishedAt ? { publishedAt: new Date(publishedAt).toISOString() } : {}),
     }
@@ -70,12 +73,13 @@ export function ContentForm({ content }: ContentFormProps) {
       const method = isEdit ? "PUT" : "POST"
       const res = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
+      if (res.status === 401) {
+        router.push("/login?from=/content/new")
+        return
+      }
       if (!res.ok) {
         const err = await res.json().catch(() => ({ message: "Save failed" }))
         throw new Error(err.message ?? "Save failed")
@@ -100,7 +104,7 @@ export function ContentForm({ content }: ContentFormProps) {
         <Input
           id="title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => handleTitleChange(e.target.value)}
           required
         />
       </div>
@@ -112,7 +116,7 @@ export function ContentForm({ content }: ContentFormProps) {
         <Input
           id="slug"
           value={slug}
-          onChange={(e) => { setSlug(e.target.value); setSlugManuallyEdited(true) }}
+          onChange={(e) => handleSlugChange(e.target.value)}
         />
         <p className="text-xs text-muted-foreground">
           URL-friendly identifier. Auto-generated from title if left empty.
@@ -156,10 +160,7 @@ export function ContentForm({ content }: ContentFormProps) {
         </Label>
         <TiptapEditor
           content={bodyJson}
-          onChange={(json, html) => {
-            setBodyJson(json)
-            setBodyHtml(html)
-          }}
+          onChange={handleBodyChange}
           placeholder="Write your content here..."
         />
       </div>

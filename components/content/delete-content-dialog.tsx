@@ -2,7 +2,6 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/auth/auth-context"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,17 +21,16 @@ interface DeleteContentDialogProps {
 export function DeleteContentDialog({ contentId, contentTitle }: DeleteContentDialogProps) {
   const [open, setOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
-  const { accessToken } = useAuth()
   const router = useRouter()
 
   async function handleDelete() {
-    if (!accessToken) return
     setIsDeleting(true)
     try {
-      await fetch(`/api/content/${contentId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
+      const res = await fetch(`/api/content/${contentId}`, { method: "DELETE" })
+      if (res.status === 401) {
+        router.push("/login")
+        return
+      }
       setOpen(false)
       router.refresh()
     } finally {
