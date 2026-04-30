@@ -41,10 +41,10 @@ export default async function SermonsPage({ searchParams }: SermonsPageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-6 py-12 md:px-8">
       <div>
-        <h1 className="text-3xl font-bold">Khotbah</h1>
-        <p className="text-muted-foreground mt-2">Kumpulan khotbah GKJ Eben Haezer</p>
+        <h1 className="font-serif text-4xl font-semibold tracking-tight">Khotbah</h1>
+        <p className="mt-2 text-muted-foreground">Kumpulan khotbah GKJ Eben Haezer</p>
       </div>
 
       {sermons.length === 0 ? (
