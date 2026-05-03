@@ -7,18 +7,20 @@ interface AutocompleteProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   suggestions: string[];
   value: string;
   onChange: (value: string) => void;
+  maxResults?: number;
 }
 
 const Autocomplete = forwardRef<HTMLInputElement, AutocompleteProps>(
-  ({ className, suggestions, value, onChange, ...props }, ref) => {
+  ({ className, suggestions, value, onChange, maxResults, ...props }, ref) => {
     const [open, setOpen] = useState(false);
     const [highlighted, setHighlighted] = useState(-1);
     const listId = useId();
     const containerRef = useRef<HTMLDivElement>(null);
 
-    const filtered = value
+    const matched = value
       ? suggestions.filter((s) => s.toLowerCase().includes(value.toLowerCase()))
       : suggestions;
+    const filtered = maxResults ? matched.slice(0, maxResults) : matched;
 
     // Close dropdown when clicking outside
     useEffect(() => {

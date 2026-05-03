@@ -4,12 +4,14 @@ import { useMemo, Fragment } from "react"
 import { Label } from "../ui/label"
 import { Textarea } from "../ui/textarea"
 import { Input } from "../ui/input"
+import { Autocomplete } from "../ui/autocomplete"
 import { Button } from "../ui/button"
 import { Checkbox } from "../ui/checkbox"
 import { Separator } from "../ui/separator"
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card"
 import { X } from "lucide-react"
 import { Bait, SongData, buildRows, emptySong, generateCsvContent } from "@/lib/title-converter"
+import { songSuggestions } from "@/lib/song-catalog"
 
 type SongCardProps = {
   song: SongData
@@ -93,10 +95,13 @@ export default function SongCard({ song, onUpdateAction }: SongCardProps) {
       <div className="flex flex-col w-full gap-3">
         <div className="flex flex-col gap-2 w-full">
           <Label>Title</Label>
-          <Input
-            placeholder="Judul"
+          <Autocomplete
+            placeholder='KJ 303 "Pujilah Khalik Semesta"'
+            className="w-full"
+            suggestions={songSuggestions}
             value={title}
-            onChange={(e) => onUpdateAction({ title: e.target.value })}
+            onChange={(v) => onUpdateAction({ title: v })}
+            maxResults={50}
           />
         </div>
 

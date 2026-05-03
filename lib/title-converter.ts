@@ -37,7 +37,7 @@ export function buildRows(text: string): string[][] {
 
 export function generateCsvContent(song: SongData): string {
   const escape = (s: string) => `"${s.replace(/"/g, '""')}"`
-  const lines = ['Judul Title,Isi lagu']
+  const lines: string[] = []
   const reffTitle = song.reff?.title.trim() || song.title
   const reffRows = song.isReffEnabled ? buildRows(song.reff?.content ?? '') : []
   for (const bait of song.baits) {
