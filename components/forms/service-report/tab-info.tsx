@@ -2,8 +2,8 @@
 
 import { useFormContext } from "react-hook-form";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { NumberInput } from "@/components/ui/number-input";
+import { cn } from "@/lib/utils";
 import type { ServiceReportFormValues } from "@/lib/schemas/service-report";
 
 const JENIS_KEBAKTIAN_OPTIONS = [
@@ -43,14 +43,19 @@ export function TabInfo() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div className="sm:col-span-1">
             <label className="mb-1.5 block text-sm font-medium">Jenis Kebaktian</label>
-            <Select {...register("jenisKebaktian")}>
+            <select
+              {...register("jenisKebaktian")}
+              className={cn(
+                "flex h-10 w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-900 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-50 dark:focus-visible:ring-zinc-300",
+              )}
+            >
               <option value="">-- Pilih Jenis --</option>
               {JENIS_KEBAKTIAN_OPTIONS.map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
               ))}
-            </Select>
+            </select>
             {errors.jenisKebaktian && (
               <p className="mt-1 text-xs text-red-500">{errors.jenisKebaktian.message}</p>
             )}
