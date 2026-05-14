@@ -27,7 +27,6 @@ const data = {
       title: "Content",
       url: "/content",
       icon: FileText,
-      isActive: false,
       items: [
         { title: "All Content", url: "/content" },
         { title: "New Content", url: "/content/new" },
@@ -37,7 +36,6 @@ const data = {
       title: "Bakominfo",
       url: "#",
       icon: SquareTerminal,
-      isActive: true,
       items: [
         {
           title: "Title Converter",
@@ -49,7 +47,6 @@ const data = {
       title: "Pelayan",
       url: "/pelayan",
       icon: Users,
-      isActive: false,
       items: [
         { title: "Jadwal", url: "/pelayan" },
         { title: "Kelola Peran", url: "/pelayan/roles" },
