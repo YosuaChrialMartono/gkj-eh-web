@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /home/user/gkj-eh-web && pnpm tsc --noEmit 2>&1 | head -30"
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && pnpm exec tsc --noEmit 2>&1 | head -30"
           }
         ]
       }

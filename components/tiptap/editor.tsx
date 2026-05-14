@@ -5,7 +5,7 @@ import StarterKit from "@tiptap/starter-kit"
 import Link from "@tiptap/extension-link"
 import Placeholder from "@tiptap/extension-placeholder"
 import ImageResize from "tiptap-extension-resize-image"
-import { useCallback, useEffect } from "react"
+import { memo, useCallback, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
@@ -168,7 +168,8 @@ function Toolbar({ editor }: { editor: Editor | null }) {
   )
 }
 
-export function TiptapEditor({ content, onChange, placeholder = "Write something..." }: TiptapEditorProps) {
+function TiptapEditorBase({ content, onChange, placeholder = "Write something..." }: TiptapEditorProps) {
+  const lastAppliedContent = useRef<string | undefined>(content)
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -227,21 +228,27 @@ export function TiptapEditor({ content, onChange, placeholder = "Write something
     content: content ? JSON.parse(content) : "",
     onUpdate: ({ editor }) => {
       const json = JSON.stringify(editor.getJSON())
+      lastAppliedContent.current = json
       const html = editor.getHTML()
       onChange?.(json, html)
     },
   })
 
+  // Sync external content changes only when the prop string actually differs
+  // from what we last applied (covers edit-page initial hydration, resets).
+  // Cheap reference equality avoids JSON.parse/stringify on every keystroke.
   useEffect(() => {
-    if (editor && content) {
-      try {
-        const parsed = JSON.parse(content)
-        if (JSON.stringify(editor.getJSON()) !== JSON.stringify(parsed)) {
-          editor.commands.setContent(parsed)
-        }
-      } catch {
-        editor.commands.setContent("")
-      }
+    if (!editor) return
+    if (content === lastAppliedContent.current) return
+    lastAppliedContent.current = content
+    if (!content) {
+      editor.commands.setContent("")
+      return
+    }
+    try {
+      editor.commands.setContent(JSON.parse(content))
+    } catch {
+      editor.commands.setContent("")
     }
   }, [content, editor])
 
@@ -252,6 +259,8 @@ export function TiptapEditor({ content, onChange, placeholder = "Write something
     </div>
   )
 }
+
+export const TiptapEditor = memo(TiptapEditorBase)
 
 function BoldIcon() {
   return (

@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshAuth().finally(() => setIsLoading(false))
   }, [refreshAuth])
 
@@ -59,8 +60,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify({ name, email, password }),
     })
     if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Registration failed" }))
-      throw new Error(err.message ?? "Registration failed")
+      const err = await res.json().catch(() => ({ message: "Pendaftaran gagal" }))
+      throw new Error(err.message ?? "Pendaftaran gagal")
     }
     const data = await res.json() as { user: User; accessToken: string }
     setUser(data.user)

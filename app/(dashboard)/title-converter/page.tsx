@@ -22,7 +22,7 @@ export default function Page() {
     const zip = new JSZip()
     for (const song of songs) {
       const csv = generateCsvContent(song)
-      const filename = `${song.judulLagu || 'lagu'}.csv`
+      const filename = `${song.title || 'lagu'}.csv`
       zip.file(filename, csv)
     }
     const blob = await zip.generateAsync({ type: 'blob' })

@@ -1,16 +1,14 @@
-export type SongData = {
-  id: string
-  judulLagu: string
-  jumlahBait: number
-  isReffEnabled: boolean
-  inputs: Record<string, string>
+export type Bait = {
+  title: string
+  content: string
 }
 
-export function toTitleCase(s: string): string {
-  const string = s.trim().split(/\s+/)
-  return [
-    ...string.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()),
-  ].join(' ')
+export type SongData = {
+  id: string
+  title: string
+  baits: Bait[]
+  isReffEnabled: boolean
+  reff: Bait
 }
 
 export function buildRows(text: string): string[][] {
@@ -39,22 +37,29 @@ export function buildRows(text: string): string[][] {
 
 export function generateCsvContent(song: SongData): string {
   const escape = (s: string) => `"${s.replace(/"/g, '""')}"`
-  const lines = ['Judul Title,Isi lagu']
-  for (let i = 0; i < song.jumlahBait; i++) {
-    const baitRows = buildRows(song.inputs[`bait-${i}`] ?? '')
+  const lines: string[] = []
+  const reffTitle = song.reff?.title.trim() || song.title
+  const reffRows = song.isReffEnabled ? buildRows(song.reff?.content ?? '') : []
+  for (const bait of song.baits) {
+    const baitRows = buildRows(bait.content)
+    if (baitRows.length === 0) continue
+    const t = bait.title.trim() || song.title
     for (const row of baitRows) {
-      lines.push(`${escape(`${toTitleCase(song.judulLagu)}: ${i + 1}`)},${escape(row.join('\n'))}`)
+      lines.push(`${escape(t)},${escape(row.join('\n'))}`)
     }
-    if (song.isReffEnabled) {
-      const reffRows = buildRows(song.inputs['reff'] ?? '')
-      for (const row of reffRows) {
-        lines.push(`${escape(`${toTitleCase(song.judulLagu)}: Reff`)},${escape(row.join('\n'))}`)
-      }
+    for (const row of reffRows) {
+      lines.push(`${escape(reffTitle)},${escape(row.join('\n'))}`)
     }
   }
   return lines.join('\n')
 }
 
 export function emptySong(id: string): SongData {
-  return { id, judulLagu: '', jumlahBait: 1, isReffEnabled: false, inputs: {} }
+  return {
+    id,
+    title: '',
+    baits: [{ title: '', content: '' }],
+    isReffEnabled: false,
+    reff: { title: '', content: '' },
+  }
 }
