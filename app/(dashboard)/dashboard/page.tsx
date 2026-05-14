@@ -39,7 +39,7 @@ export default async function DashboardPage() {
 
       <KpiPlaceholder />
 
-      <div className="grid gap-5 md:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-5 md:grid-cols-[minmax(0,1fr)_340px]">
         <DraftsCard items={drafts} />
         <Suspense fallback={<JadwalSkeleton />}>
           <JadwalCard />

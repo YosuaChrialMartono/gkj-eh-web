@@ -11,7 +11,7 @@ interface Props {
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[180px_1fr] gap-2 border-b border-zinc-100 py-2 last:border-0 dark:border-zinc-800">
+    <div className="grid grid-cols-1 gap-1 border-b border-zinc-100 py-2 last:border-0 sm:grid-cols-[180px_1fr] sm:gap-2 dark:border-zinc-800">
       <span className="text-sm text-zinc-500">{label}</span>
       <span className="text-sm">{value || "—"}</span>
     </div>
