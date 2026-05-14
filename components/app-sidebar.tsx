@@ -4,12 +4,6 @@ import * as React from "react"
 import {
   Command,
   FileText,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
   SquareTerminal,
   Users,
 } from "lucide-react"

@@ -22,7 +22,10 @@ export default function SongCard({ song, onUpdateAction }: SongCardProps) {
   const title = song.title ?? ''
   const baits: Bait[] = song.baits ?? emptySong('').baits
   const isReffEnabled = song.isReffEnabled ?? false
-  const reff: Bait = song.reff ?? { title: '', content: '' }
+  const reff: Bait = useMemo(
+    () => song.reff ?? { title: '', content: '' },
+    [song.reff],
+  )
 
   const updateBait = (i: number, patch: Partial<Bait>) => {
     const next = baits.map((b, idx) => (idx === i ? { ...b, ...patch } : b))
