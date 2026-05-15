@@ -19,14 +19,21 @@ async function authed<T>(path: string, init?: RequestInitWithParams): Promise<T>
   return authenticatedApiClient<T>(token, path, init)
 }
 
+// Public lists change rarely; let Next.js's data cache serve them for 60s.
+// This kills the loading.tsx flash on repeat nav between /news ↔ /sermons.
+const PUBLIC_CACHE = { next: { revalidate: 60 } } as RequestInit
+
 export async function getPublicContentList(
   params?: ContentListParams
 ): Promise<PaginatedResponse<ContentListItem>> {
-  return apiClient("/content/public", { params: params as Record<string, string | number | boolean | undefined> })
+  return apiClient("/content/public", {
+    ...PUBLIC_CACHE,
+    params: params as Record<string, string | number | boolean | undefined>,
+  })
 }
 
 export async function getContentBySlug(slug: string): Promise<Content> {
-  return apiClient(`/content/public/slug/${slug}`)
+  return apiClient(`/content/public/slug/${slug}`, PUBLIC_CACHE)
 }
 
 export async function getContentList(
