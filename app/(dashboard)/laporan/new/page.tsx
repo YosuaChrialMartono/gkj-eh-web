@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { fetchMembers } from "@/lib/api/reports";
+import { fetchMembers } from "@/lib/api/reports-server";
 import { ServiceReportForm } from "@/components/forms/service-report/form-tabs";
 
 export default async function NewLaporanPage() {

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { fetchReports } from "@/lib/api/reports";
+import { fetchReports } from "@/lib/api/reports-server";
 import { Button } from "@/components/ui/button";
 import type { ServiceReport } from "@/types";
 

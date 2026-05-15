@@ -1,44 +1,20 @@
-import { NextRequest, NextResponse } from "next/server";
-import { getReportById, updateReport, deleteReport } from "@/lib/api/mock-store";
-import { serviceReportSchema } from "@/lib/schemas/service-report";
+import { NextRequest } from "next/server"
+import { proxyToBackend } from "@/lib/api/proxy"
 
-type Params = { params: Promise<{ id: string }> };
+type Params = { params: Promise<{ id: string }> }
 
 export async function GET(_req: NextRequest, { params }: Params) {
-  const { id } = await params;
-  const report = getReportById(id);
-  if (!report) {
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
-  }
-  return NextResponse.json(report);
+  const { id } = await params
+  return proxyToBackend({ method: "GET", path: `/reports/${id}` })
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
-  const { id } = await params;
-  try {
-    const body = await request.json();
-    const parsed = serviceReportSchema.partial().safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 },
-      );
-    }
-    const updated = updateReport(id, parsed.data);
-    if (!updated) {
-      return NextResponse.json({ error: "Report not found" }, { status: 404 });
-    }
-    return NextResponse.json(updated);
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  }
+  const { id } = await params
+  const body = await request.text()
+  return proxyToBackend({ method: "PUT", path: `/reports/${id}`, body })
 }
 
 export async function DELETE(_req: NextRequest, { params }: Params) {
-  const { id } = await params;
-  const ok = deleteReport(id);
-  if (!ok) {
-    return NextResponse.json({ error: "Report not found" }, { status: 404 });
-  }
-  return new NextResponse(null, { status: 204 });
+  const { id } = await params
+  return proxyToBackend({ method: "DELETE", path: `/reports/${id}` })
 }

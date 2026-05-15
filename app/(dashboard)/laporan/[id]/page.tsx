@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchReport } from "@/lib/api/reports";
+import { fetchReport } from "@/lib/api/reports-server";
 import { Button } from "@/components/ui/button";
 
 interface Props {

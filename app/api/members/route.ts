@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-import { getMembers } from "@/lib/api/mock-store";
+import { proxyToBackend } from "@/lib/api/proxy"
 
 export async function GET() {
-  return NextResponse.json(getMembers());
+  return proxyToBackend({ method: "GET", path: "/members" })
 }
