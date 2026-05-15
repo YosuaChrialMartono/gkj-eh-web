@@ -1,8 +1,17 @@
 import Image from "next/image"
+import Link from "next/link"
 import type { Content } from "@/lib/types"
 import type { TocItem } from "@/lib/content-toc"
 import { ReaderToc } from "./reader-toc"
 import { ReaderControlsRail, ReaderControlsFab } from "./reader-controls"
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
 
 interface ArticleReaderProps {
   content: Content
@@ -16,6 +25,11 @@ const TYPE_LABEL: Record<string, string> = {
   sermon: "Khotbah",
   announcement: "Pengumuman",
   page: "Halaman",
+}
+
+const TYPE_INDEX: Record<string, { href: string; label: string } | undefined> = {
+  article: { href: "/news", label: "Berita" },
+  sermon: { href: "/sermons", label: "Khotbah" },
 }
 
 function formatID(iso: string): string {
@@ -39,10 +53,36 @@ function authorInitials(name: string): string {
 export function ArticleReader({ content, html, toc, readingTimeMin }: ArticleReaderProps) {
   const eyebrow = TYPE_LABEL[content.type] ?? content.type
   const dateIso = content.publishedAt ?? content.createdAt
+  const index = TYPE_INDEX[content.type]
 
   return (
     <div className="min-h-screen bg-background font-serif text-foreground">
-      <div className="mx-auto max-w-[760px] px-6 pt-12 md:pt-18 md:px-8">
+      <div className="mx-auto max-w-[760px] px-6 pt-8 font-sans md:px-8 md:pt-10">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href="/">Home</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            {index ? (
+              <>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink asChild>
+                    <Link href={index.href}>{index.label}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+              </>
+            ) : null}
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="line-clamp-1">{content.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+      </div>
+      <div className="mx-auto max-w-[760px] px-6 pt-6 md:pt-8 md:px-8">
         <div className="mb-7 flex items-center justify-center gap-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
           <span>{eyebrow}</span>
           <span aria-hidden className="h-1 w-1 rounded-full bg-current opacity-60" />

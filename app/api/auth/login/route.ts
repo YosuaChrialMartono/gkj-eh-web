@@ -6,8 +6,14 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json() as LoginInput
     const data = await login(body)
+    if (!data.refreshToken) {
+      return NextResponse.json(
+        { message: "Auth response missing refreshToken" },
+        { status: 502 },
+      )
+    }
     const res = NextResponse.json({ user: data.user, accessToken: data.accessToken })
-    res.cookies.set("refresh_token", data.refreshToken ?? data.accessToken, {
+    res.cookies.set("refresh_token", data.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",

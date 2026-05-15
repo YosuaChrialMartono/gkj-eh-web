@@ -2,8 +2,10 @@
 
 import {
   ChevronsUpDown,
+  Loader2,
   LogOut,
 } from "lucide-react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/lib/auth/auth-context"
 import {
@@ -30,10 +32,18 @@ export function NavUser() {
   const { isMobile } = useSidebar()
   const { user, logout } = useAuth()
   const router = useRouter()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
-  async function handleLogout() {
-    await logout()
-    router.push("/login")
+  async function handleLogout(event: Event) {
+    event.preventDefault()
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+    try {
+      await logout()
+      router.push("/login")
+    } finally {
+      setIsLoggingOut(false)
+    }
   }
 
   if (!user) return null
@@ -84,9 +94,16 @@ export function NavUser() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout}>
-              <LogOut />
-              Log out
+            <DropdownMenuItem
+              onSelect={handleLogout}
+              disabled={isLoggingOut}
+            >
+              {isLoggingOut ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <LogOut />
+              )}
+              {isLoggingOut ? "Logging out…" : "Log out"}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

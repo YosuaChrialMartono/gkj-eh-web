@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation"
 import Link from "next/link"
-import { useEffect, useState } from "react"
+import { Fragment, useEffect, useState } from "react"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -59,7 +59,7 @@ export function DashboardBreadcrumb() {
           const label = formatSegment(segment)
 
           return (
-            <div key={href} className="flex items-center">
+            <Fragment key={href}>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
                 {isLast ? (
@@ -70,7 +70,7 @@ export function DashboardBreadcrumb() {
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-            </div>
+            </Fragment>
           )
         })}
       </BreadcrumbList>

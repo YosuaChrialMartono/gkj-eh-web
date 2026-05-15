@@ -8,8 +8,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "No refresh token" }, { status: 401 })
     }
     const data = await refreshToken(token)
+    if (!data.refreshToken) {
+      return NextResponse.json(
+        { message: "Auth response missing refreshToken" },
+        { status: 502 },
+      )
+    }
     const res = NextResponse.json({ user: data.user, accessToken: data.accessToken })
-    res.cookies.set("refresh_token", data.refreshToken ?? data.accessToken, {
+    res.cookies.set("refresh_token", data.refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
