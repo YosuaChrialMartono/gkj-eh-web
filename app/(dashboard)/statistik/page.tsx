@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { fetchReports } from "@/lib/api/reports";
+import { fetchReports } from "@/lib/api/reports-server";
 import { AttendanceChart } from "@/components/statistik/attendance-chart";
 import { OfferingChart } from "@/components/statistik/offering-chart";
 import type { ServiceReport } from "@/types";

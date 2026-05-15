@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { fetchReport, fetchMembers } from "@/lib/api/reports";
+import { fetchReport, fetchMembers } from "@/lib/api/reports-server";
 import { ServiceReportForm } from "@/components/forms/service-report/form-tabs";
 
 interface Props {

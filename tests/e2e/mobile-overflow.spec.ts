@@ -44,7 +44,8 @@ test.describe("mobile responsiveness", () => {
   for (const r of routes) {
     test(`${r.name} (${r.path}) no horizontal overflow`, async ({ page }) => {
       await page.goto(r.path)
-      await page.waitForLoadState("networkidle")
+      await page.waitForLoadState("domcontentloaded")
+    await page.waitForTimeout(500)
       const { overflow, body, viewport } = await hasHorizontalOverflow(page)
       const label = `${r.path} body=${body}px viewport=${viewport}px`
       console.log(label, overflow ? "OVERFLOW" : "ok")
@@ -55,14 +56,16 @@ test.describe("mobile responsiveness", () => {
 
 test("login page no horizontal overflow", async ({ page }) => {
   await page.goto("/login")
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("domcontentloaded")
+  await page.waitForTimeout(500)
   const { overflow, body, viewport } = await hasHorizontalOverflow(page)
   expect(overflow, `/login body=${body}px viewport=${viewport}px`).toBeFalsy()
 })
 
 test("register page no horizontal overflow", async ({ page }) => {
   await page.goto("/register")
-  await page.waitForLoadState("networkidle")
+  await page.waitForLoadState("domcontentloaded")
+  await page.waitForTimeout(500)
   const { overflow, body, viewport } = await hasHorizontalOverflow(page)
   expect(overflow, `/register body=${body}px viewport=${viewport}px`).toBeFalsy()
 })
