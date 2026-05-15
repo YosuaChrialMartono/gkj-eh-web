@@ -61,7 +61,7 @@ export default async function PelayanPage({ searchParams }: PelayanPageProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-semibold">Jadwal Pelayan</h1>
         <Button asChild variant="outline" size="sm">
           <Link href="/pelayan/roles">
@@ -71,7 +71,7 @@ export default async function PelayanPage({ searchParams }: PelayanPageProps) {
         </Button>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <MonthPicker month={month} />
         <AddServiceDialog existingDates={services.map((s) => s.date)} />
       </div>
