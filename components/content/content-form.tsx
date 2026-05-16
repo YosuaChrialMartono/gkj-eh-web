@@ -36,6 +36,27 @@ export function ContentForm({ content }: ContentFormProps) {
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+
+  async function handleFeaturedImageUpload(file: File) {
+    setError(null)
+    setIsUploadingImage(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const res = await fetch("/api/upload", { method: "POST", body: formData })
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ message: "Upload failed" }))
+        throw new Error(err.message ?? "Upload failed")
+      }
+      const data = await res.json() as { url: string }
+      setFeaturedImageUrl(data.url)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed")
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
 
   const handleTitleChange = useCallback((next: string) => {
     setTitle(next)
@@ -166,14 +187,39 @@ export function ContentForm({ content }: ContentFormProps) {
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="featuredImageUrl">Featured Image URL</Label>
+        <Label htmlFor="featuredImageUrl">Featured Image</Label>
         <Input
           id="featuredImageUrl"
           type="url"
           value={featuredImageUrl}
           onChange={(e) => setFeaturedImageUrl(e.target.value)}
-          placeholder="https://..."
+          placeholder="https://… or upload below"
         />
+        <div className="flex items-center gap-2">
+          <Input
+            id="featuredImageFile"
+            type="file"
+            accept="image/*"
+            disabled={isUploadingImage}
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void handleFeaturedImageUpload(file)
+              e.target.value = ""
+            }}
+            className="max-w-sm"
+          />
+          {isUploadingImage && (
+            <span className="text-xs text-muted-foreground">Uploading…</span>
+          )}
+        </div>
+        {featuredImageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={featuredImageUrl}
+            alt="Featured preview"
+            className="mt-2 max-h-40 w-auto rounded border"
+          />
+        )}
       </div>
 
       <div className="flex flex-col gap-2">

@@ -8,6 +8,7 @@ interface AuthContextValue {
   accessToken: string | null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
+  loginWithGoogle: (credential: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<boolean>
@@ -37,6 +38,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     refreshAuth().finally(() => setIsLoading(false))
   }, [refreshAuth])
+
+  const loginWithGoogle = useCallback(async (credential: string) => {
+    const res = await fetch("/api/auth/google", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential }),
+    })
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ message: "Google login failed" }))
+      throw new Error(err.message ?? "Google login failed")
+    }
+    const data = await res.json() as { user: User; accessToken: string }
+    setUser(data.user)
+    setAccessToken(data.accessToken)
+  }, [])
 
   const login = useCallback(async (email: string, password: string) => {
     const res = await fetch("/api/auth/login", {
@@ -75,7 +91,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext value={{ user, accessToken, isLoading, login, register, logout, refreshAuth }}>
+    <AuthContext value={{ user, accessToken, isLoading, login, loginWithGoogle, register, logout, refreshAuth }}>
       {children}
     </AuthContext>
   )
