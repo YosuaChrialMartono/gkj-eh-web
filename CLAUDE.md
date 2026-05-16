@@ -1,5 +1,8 @@
 # CLAUDE.md
 
+**Read `handoff/README.md` first** for current session state (branches, open TODOs).
+**Read `docs/`** for permanent reference (architecture, running, tests, gotchas).
+
 Guidance for Claude Code working in this repo.
 
 ## Commands
