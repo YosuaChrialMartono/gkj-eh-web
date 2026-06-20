@@ -40,8 +40,8 @@ function formatID(iso: string): string {
   })
 }
 
-function authorInitials(name: string): string {
-  return name
+function authorInitials(name: string | null | undefined): string {
+  return (name ?? "")
     .split(/\s+/)
     .slice(0, 2)
     .map((n) => n[0]?.toUpperCase() ?? "")
@@ -103,9 +103,9 @@ export function ArticleReader({ content, html, toc, readingTimeMin }: ArticleRea
 
         <div className="mb-12 flex items-center justify-center gap-3 font-sans text-sm text-muted-foreground md:mb-14">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary font-semibold text-secondary-foreground">
-            {authorInitials(content.authorName)}
+            {authorInitials(content.author?.name)}
           </span>
-          <span className="font-medium text-foreground">{content.authorName}</span>
+          <span className="font-medium text-foreground">{content.author?.name}</span>
         </div>
       </div>
 
