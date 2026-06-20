@@ -27,7 +27,7 @@ export function FeaturedReading({ item }: FeaturedReadingProps) {
             <div className="text-sm leading-relaxed text-muted-foreground">
               {formatID(item.publishedAt ?? item.createdAt)}
               <br />
-              {item.authorName}
+              {item.author?.name}
             </div>
           </div>
           <div>
