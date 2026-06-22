@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { getServices, getAssignments } from "@/lib/api/pelayan"
+import { withFallback } from "@/lib/api/safe"
 import type { PelayanService } from "@/lib/types"
 
 const DAY_SHORT = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
@@ -30,10 +31,13 @@ async function loadWeek(): Promise<ServiceWithAssignees[]> {
   let services: PelayanService[] = []
   try {
     const lists = await Promise.all(
-      Array.from(months).map((m) => getServices(m).catch(() => [] as PelayanService[]))
+      Array.from(months).map((m) =>
+        withFallback(getServices(m), [] as PelayanService[], `getServices(${m})`),
+      )
     )
     services = lists.flat()
-  } catch {
+  } catch (error) {
+    console.error("[data] loadWeek (jadwal-card) failed:", error)
     return []
   }
 
@@ -45,7 +49,11 @@ async function loadWeek(): Promise<ServiceWithAssignees[]> {
 
   const enriched = await Promise.all(
     inWeek.map(async ({ s, date }) => {
-      const assigns = await getAssignments(s.id).catch(() => [])
+      const assigns = await withFallback(
+        getAssignments(s.id),
+        [],
+        `getAssignments(${s.id})`,
+      )
       return {
         service: s,
         date,

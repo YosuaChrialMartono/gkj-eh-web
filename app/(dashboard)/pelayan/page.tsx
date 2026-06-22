@@ -7,6 +7,7 @@ import { MonthPicker } from "@/components/pelayan/month-picker"
 import { PelayanTable } from "@/components/pelayan/pelayan-table"
 import { AddServiceDialog } from "@/components/pelayan/add-service-dialog"
 import { getRoles, getServices, getPersons, getAssignments } from "@/lib/api/pelayan"
+import { withFallback } from "@/lib/api/safe"
 
 interface PelayanPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -24,16 +25,20 @@ function PelayanTableSkeleton() {
 
 async function PelayanTableLoader({ month }: { month: string }) {
   const [roles, services, persons] = await Promise.all([
-    getRoles().catch(() => []),
-    getServices(month).catch(() => []),
-    getPersons().catch(() => []),
+    withFallback(getRoles(), [], "getRoles"),
+    withFallback(getServices(month), [], `getServices(${month})`),
+    withFallback(getPersons(), [], "getPersons"),
   ])
 
   const assignmentsByService: Record<string, import("@/lib/types").PelayanAssignment[]> = {}
   if (services.length > 0) {
     const results = await Promise.all(
       services.map(async (svc) => {
-        const assignments = await getAssignments(svc.id).catch(() => [])
+        const assignments = await withFallback(
+          getAssignments(svc.id),
+          [],
+          `getAssignments(${svc.id})`,
+        )
         return { id: svc.id, assignments }
       })
     )
@@ -57,7 +62,11 @@ export default async function PelayanPage({ searchParams }: PelayanPageProps) {
   const sp = await searchParams
   const month = (sp.month as string) ?? new Date().toISOString().slice(0, 7)
 
-  const services = await getServices(month).catch(() => [])
+  const services = await withFallback(
+    getServices(month),
+    [],
+    `getServices(${month})`,
+  )
 
   return (
     <div className="flex flex-col gap-6">
