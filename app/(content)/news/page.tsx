@@ -60,7 +60,7 @@ export default async function NewsPage({ searchParams }: NewsPageProps) {
                   </Link>
                 </CardTitle>
                 <CardDescription>
-                  {item.authorName} · {formatDate(item.publishedAt ?? item.createdAt)}
+                  {item.author?.name} · {formatDate(item.publishedAt ?? item.createdAt)}
                 </CardDescription>
               </CardHeader>
             </Card>

@@ -62,7 +62,7 @@ export async function ContentTable({ params }: ContentTableProps) {
             <TableCell>
               <Badge variant={STATUS_VARIANT[item.status]}>{item.status}</Badge>
             </TableCell>
-            <TableCell>{item.authorName}</TableCell>
+            <TableCell>{item.author?.name}</TableCell>
             <TableCell>{formatDate(item.updatedAt)}</TableCell>
             <TableCell className="text-right">
               <div className="flex justify-end gap-2">

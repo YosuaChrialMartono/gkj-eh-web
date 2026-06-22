@@ -59,7 +59,7 @@ export function NewsList({ items }: NewsListProps) {
                     {n.title}
                   </h3>
                   <p className="mt-1.5 text-sm text-muted-foreground">
-                    {n.authorName}
+                    {n.author?.name}
                   </p>
                 </div>
                 <div className="text-sm font-semibold text-accent md:text-right">

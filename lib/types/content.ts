@@ -11,6 +11,15 @@ export enum ContentStatus {
   archived = "archived",
 }
 
+// Author projection returned by the backend. Public endpoints only return
+// { name, avatar }; authenticated endpoints add { email, role }. Never a password.
+export interface ContentAuthor {
+  name: string
+  avatar: string | null
+  email?: string
+  role?: string
+}
+
 export interface Content {
   id: string
   title: string
@@ -20,7 +29,7 @@ export interface Content {
   body: string
   bodyHtml: string | null
   authorId: string
-  authorName: string
+  author: ContentAuthor | null
   featuredImageUrl: string | null
   publishedAt: string | null
   createdAt: string
@@ -34,7 +43,7 @@ export interface ContentListItem {
   type: ContentType
   status: ContentStatus
   authorId: string
-  authorName: string
+  author: ContentAuthor | null
   featuredImageUrl: string | null
   publishedAt: string | null
   createdAt: string
