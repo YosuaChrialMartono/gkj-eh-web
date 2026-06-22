@@ -27,8 +27,9 @@ export default async function StatistikPage() {
   let reports: ServiceReport[] = [];
   try {
     reports = await fetchReports();
-  } catch {
-    // handled below
+  } catch (error) {
+    // Degrade to an empty chart, but log so a real failure isn't invisible.
+    console.error("[data] fetchReports (statistik) failed:", error);
   }
 
   // Sort oldest-first for chart readability
