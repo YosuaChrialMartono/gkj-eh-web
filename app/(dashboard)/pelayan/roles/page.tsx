@@ -3,9 +3,10 @@ import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RoleManager } from "@/components/pelayan/role-manager"
 import { getRoles } from "@/lib/api/pelayan"
+import { withFallback } from "@/lib/api/safe"
 
 export default async function PelayanRolesPage() {
-  const roles = await getRoles().catch(() => [])
+  const roles = await withFallback(getRoles(), [], "getRoles")
 
   return (
     <div className="flex flex-col gap-6">
