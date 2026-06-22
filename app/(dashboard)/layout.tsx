@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
+import { getAccessToken } from "@/lib/auth/server-utils"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ColorModeToggle } from "@/components/color-mode-toggle"
 import { Separator } from "@/components/ui/separator"
@@ -15,8 +15,11 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const token = (await cookies()).get("refresh_token")?.value
-  if (!token) {
+  // Validate the session by actually minting an access token (backend verifies
+  // the refresh token's signature + expiry) rather than trusting mere cookie
+  // presence. React.cache means child RSC fetches reuse this same mint.
+  const accessToken = await getAccessToken()
+  if (!accessToken) {
     redirect("/login?from=/dashboard")
   }
 
