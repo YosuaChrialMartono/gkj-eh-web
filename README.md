@@ -18,7 +18,14 @@ pnpm dev          # Start dev server
 pnpm build        # Production build
 pnpm start        # Start production server
 pnpm lint         # Run ESLint
+pnpm test         # Run unit/integration tests
+pnpm test:e2e     # Run Playwright tests
+pnpm verify       # Run the complete local verification sequence
 ```
+
+Copy `.env.example` to `.env.local` and keep real credentials out of git. Playwright
+requires a local browser installation; run `pnpm exec playwright install` once when
+setting up a new machine.
 
 ---
 
