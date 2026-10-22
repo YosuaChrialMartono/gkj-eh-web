@@ -14,7 +14,7 @@ import {
   CommandList,
 } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useAuth } from "@/lib/auth/auth-context"
+import { assignPelayan, createPelayanPerson } from "@/lib/server/pelayan/actions"
 import type { PelayanAssignment, PelayanPerson } from "@/lib/types"
 import type { ServiceRow } from "@/lib/pelayan-utils"
 import { isVirtualRow } from "@/lib/pelayan-utils"
@@ -28,7 +28,6 @@ interface PelayanCellProps {
 }
 
 export function PelayanCell({ assignment, serviceRow, roleId, persons, onAssigned }: PelayanCellProps) {
-  const { accessToken } = useAuth()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
   const [inputValue, setInputValue] = useState("")
@@ -40,29 +39,14 @@ export function PelayanCell({ assignment, serviceRow, roleId, persons, onAssigne
     setPending(true)
     setOpen(false)
     try {
-      let serviceId: string
-      if (isVirtualRow(serviceRow)) {
-        // Materialise the virtual Sunday
-        const res = await fetch("/api/pelayan/services", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ date: serviceRow.date, isExtra: false }),
-        })
-        if (!res.ok) throw new Error("Gagal membuat data ibadah")
-        const svc = await res.json() as { id: string }
-        serviceId = svc.id
-      } else {
-        serviceId = serviceRow.id
+      if (!persons.some((person) => person.name.trim().toLowerCase() === name.trim().toLowerCase())) {
+        const personResult = await createPelayanPerson(name)
+        if (!personResult.ok) throw new Error(personResult.error.message)
       }
 
-      const res = await fetch("/api/pelayan/assignments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ serviceId, roleId, pelayanName: name }),
-      })
-      if (!res.ok) throw new Error("Gagal menyimpan pelayan")
-      const saved = await res.json() as PelayanAssignment
-      onAssigned(saved, serviceId)
+      const result = await assignPelayan({ ...(isVirtualRow(serviceRow) ? { date: serviceRow.date } : { serviceId: serviceRow.id }), roleId, pelayanName: name })
+      if (!result.ok) throw new Error(result.error.message)
+      onAssigned(result.data.assignment, result.data.service.id)
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Terjadi kesalahan")
     } finally {

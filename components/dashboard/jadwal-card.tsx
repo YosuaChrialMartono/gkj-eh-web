@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { getServices, getAssignments } from "@/lib/api/pelayan"
+import { getPelayanMonth } from "@/lib/server/pelayan"
 import type { PelayanService } from "@/lib/types"
 
 const DAY_SHORT = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"]
@@ -29,10 +29,8 @@ async function loadWeek(): Promise<ServiceWithAssignees[]> {
 
   let services: PelayanService[] = []
   try {
-    const lists = await Promise.all(
-      Array.from(months).map((m) => getServices(m).catch(() => [] as PelayanService[]))
-    )
-    services = lists.flat()
+    const lists = await Promise.all(Array.from(months).map((m) => getPelayanMonth(m)))
+    services = lists.flatMap((result) => result.services.map((service) => ({ ...service, label: service.label ?? undefined })))
   } catch {
     return []
   }
@@ -45,7 +43,8 @@ async function loadWeek(): Promise<ServiceWithAssignees[]> {
 
   const enriched = await Promise.all(
     inWeek.map(async ({ s, date }) => {
-      const assigns = await getAssignments(s.id).catch(() => [])
+      const result = await getPelayanMonth(monthKey(date))
+      const assigns = result.assignments.filter((assignment) => assignment.serviceId === s.id)
       return {
         service: s,
         date,

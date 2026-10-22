@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { MonthPicker } from "@/components/pelayan/month-picker"
 import { PelayanTable } from "@/components/pelayan/pelayan-table"
 import { AddServiceDialog } from "@/components/pelayan/add-service-dialog"
-import { getRoles, getServices, getPersons, getAssignments } from "@/lib/api/pelayan"
+import { getPelayanMonth } from "@/lib/server/pelayan"
 
 interface PelayanPageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -23,32 +23,16 @@ function PelayanTableSkeleton() {
 }
 
 async function PelayanTableLoader({ month }: { month: string }) {
-  const [roles, services, persons] = await Promise.all([
-    getRoles().catch(() => []),
-    getServices(month).catch(() => []),
-    getPersons().catch(() => []),
-  ])
-
-  const assignmentsByService: Record<string, import("@/lib/types").PelayanAssignment[]> = {}
-  if (services.length > 0) {
-    const results = await Promise.all(
-      services.map(async (svc) => {
-        const assignments = await getAssignments(svc.id).catch(() => [])
-        return { id: svc.id, assignments }
-      })
-    )
-    for (const r of results) {
-      assignmentsByService[r.id] = r.assignments
-    }
-  }
+  const { roles, services, persons, assignments } = await getPelayanMonth(month)
+  const assignmentsByService = Object.groupBy(assignments, (assignment) => assignment.serviceId)
 
   return (
     <PelayanTable
       roles={roles}
-      services={services}
+      services={services.map((service) => ({ ...service, label: service.label ?? undefined }))}
       month={month}
       persons={persons}
-      assignmentsByService={assignmentsByService}
+      assignmentsByService={Object.fromEntries(Object.entries(assignmentsByService).map(([key, value]) => [key, value ?? []]))}
     />
   )
 }
@@ -57,7 +41,7 @@ export default async function PelayanPage({ searchParams }: PelayanPageProps) {
   const sp = await searchParams
   const month = (sp.month as string) ?? new Date().toISOString().slice(0, 7)
 
-  const services = await getServices(month).catch(() => [])
+  const { services } = await getPelayanMonth(month)
 
   return (
     <div className="flex flex-col gap-6">

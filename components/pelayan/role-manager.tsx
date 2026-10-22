@@ -5,7 +5,7 @@ import { Trash2, ArrowUp, ArrowDown, Plus } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/lib/auth/auth-context"
+import { savePelayanRole, removePelayanRole } from "@/lib/server/pelayan/actions"
 import type { PelayanRole } from "@/lib/types"
 
 interface RoleManagerProps {
@@ -19,7 +19,6 @@ function isDraft(r: DraftRole): r is { id: "__new__"; name: string; order: numbe
 }
 
 export function RoleManager({ initialRoles }: RoleManagerProps) {
-  const { accessToken } = useAuth()
   const [roles, setRoles] = useState<DraftRole[]>(
     [...initialRoles].sort((a, b) => a.order - b.order)
   )
@@ -31,14 +30,9 @@ export function RoleManager({ initialRoles }: RoleManagerProps) {
     if (isDraft(role)) {
       // Create
       try {
-        const res = await fetch("/api/pelayan/roles", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ name: role.name, order: role.order }),
-        })
-        if (!res.ok) throw new Error("Gagal menyimpan peran")
-        const created = await res.json() as PelayanRole
-        setRoles((prev) => prev.map((r, i) => (i === index ? created : r)))
+        const result = await savePelayanRole({ name: role.name, order: role.order })
+        if (!result.ok) throw new Error(result.error.message)
+        setRoles((prev) => prev.map((r, i) => (i === index ? result.data : r)))
         toast.success("Peran ditambahkan")
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Terjadi kesalahan")
@@ -46,14 +40,9 @@ export function RoleManager({ initialRoles }: RoleManagerProps) {
     } else {
       // Update
       try {
-        const res = await fetch(`/api/pelayan/roles/${role.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ name: role.name, order: role.order }),
-        })
-        if (!res.ok) throw new Error("Gagal memperbarui peran")
-        const updated = await res.json() as PelayanRole
-        setRoles((prev) => prev.map((r, i) => (i === index ? updated : r)))
+        const result = await savePelayanRole({ name: role.name, order: role.order }, role.id)
+        if (!result.ok) throw new Error(result.error.message)
+        setRoles((prev) => prev.map((r, i) => (i === index ? result.data : r)))
         toast.success("Peran diperbarui")
       } catch (err) {
         toast.error(err instanceof Error ? err.message : "Terjadi kesalahan")
@@ -68,11 +57,8 @@ export function RoleManager({ initialRoles }: RoleManagerProps) {
       return
     }
     try {
-      const res = await fetch(`/api/pelayan/roles/${role.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
-      if (!res.ok && res.status !== 204) throw new Error("Gagal menghapus peran")
+      const result = await removePelayanRole(role.id)
+      if (!result.ok) throw new Error(result.error.message)
       setRoles((prev) => prev.filter((_, i) => i !== index))
       toast.success("Peran dihapus")
     } catch (err) {
@@ -95,13 +81,7 @@ export function RoleManager({ initialRoles }: RoleManagerProps) {
     const toUpdate = [next[index], next[newIndex]].filter((r) => !isDraft(r)) as PelayanRole[]
     try {
       await Promise.all(
-        toUpdate.map((r) =>
-          fetch(`/api/pelayan/roles/${r.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-            body: JSON.stringify({ name: r.name, order: r.order }),
-          })
-        )
+        toUpdate.map((r) => savePelayanRole({ name: r.name, order: r.order }, r.id))
       )
     } catch {
       toast.error("Gagal memperbarui urutan")
