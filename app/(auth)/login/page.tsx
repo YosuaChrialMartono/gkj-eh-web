@@ -1,9 +1,9 @@
 "use client"
 
-import { Suspense, useState, FormEvent } from "react"
+import { Suspense, useEffect, useState, FormEvent } from "react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { GoogleLogin } from "@react-oauth/google"
+import { safeRedirect } from "@/lib/auth/policy"
 import { useAuth } from "@/lib/auth/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -19,8 +19,11 @@ function LoginForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-  const from = searchParams.get("from") ?? "/dashboard"
+  const [googleEnabled, setGoogleEnabled] = useState(false)
+  useEffect(() => {
+    void fetch("/api/auth/providers").then(r => r.json()).then(providers => setGoogleEnabled(!!providers.google)).catch(() => setGoogleEnabled(false))
+  }, [])
+  const from = safeRedirect(searchParams.get("from"))
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -36,12 +39,11 @@ function LoginForm() {
     }
   }
 
-  async function handleGoogleCredential(credential: string) {
+  async function handleGoogleCredential() {
     setError(null)
     setIsLoading(true)
     try {
-      await loginWithGoogle(credential)
-      router.push(from)
+      await loginWithGoogle(from)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google login failed")
     } finally {
@@ -87,7 +89,7 @@ function LoginForm() {
             {isLoading ? "Masuk..." : "Masuk"}
           </Button>
         </form>
-        {googleClientId && (
+        {googleEnabled && (
           <>
             <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
@@ -98,13 +100,7 @@ function LoginForm() {
               </div>
             </div>
             <div className="flex justify-center">
-              <GoogleLogin
-                onSuccess={(res) => {
-                  if (res.credential) void handleGoogleCredential(res.credential)
-                  else setError("Google login failed: no credential")
-                }}
-                onError={() => setError("Google sign-in was cancelled or failed")}
-              />
+              <Button type="button" variant="outline" disabled={isLoading} onClick={() => void handleGoogleCredential()}>Masuk dengan Google</Button>
             </div>
           </>
         )}

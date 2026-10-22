@@ -1,5 +1,7 @@
 # Register Page Implementation Plan
 
+> Historical plan; superseded by the local Auth.js registration server action. The proposed `/api/auth/register` BFF endpoint no longer exists.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a registration page and extend AuthContext with a `register()` method so new users can create accounts and be automatically logged in.

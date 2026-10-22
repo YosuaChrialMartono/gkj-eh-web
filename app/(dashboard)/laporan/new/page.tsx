@@ -1,12 +1,12 @@
 export const dynamic = "force-dynamic";
 
-import { fetchMembers } from "@/lib/api/reports-server";
+import { listMemberNames } from "@/lib/server/members";
 import { ServiceReportForm } from "@/components/forms/service-report/form-tabs";
 
 export default async function NewLaporanPage() {
   let members: string[] = [];
   try {
-    members = await fetchMembers();
+    members = await listMemberNames();
   } catch {
     // graceful fallback — form still works with empty autocomplete
   }

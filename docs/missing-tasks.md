@@ -6,33 +6,17 @@ This document tracks known bugs, missing features, and polish items discovered d
 
 ## Bugs
 
-### 1. `refresh_token` cookie stores `accessToken`
-**Files**: `app/api/auth/login/route.ts`, `app/api/auth/register/route.ts`, `app/api/auth/refresh/route.ts`, `app/api/auth/google/route.ts`
-
-All four auth routes set the httpOnly cookie to `data.accessToken`. If the backend returns a separate `refreshToken` field, the `AuthResponse` type and the cookie-setting logic in each route need updating to use `data.refreshToken` instead.
-
-**Fix needed**:
-- Update `AuthResponse` type in `lib/types/auth.ts` to include `refreshToken?: string`
-- Update each route to set the cookie from `data.refreshToken` (fall back to `data.accessToken` if absent)
-
-### 2. `useApi` stale closure on retry after refresh
-**File**: `hooks/use-api.ts`
-
-After a 401 triggers `refreshAuth()`, the retry call still uses the old `accessToken` captured in the closure at the time of the original call. The refreshed token stored in `AuthContext` is not re-read before retrying.
-
-**Fix needed**: After a successful `refreshAuth()`, read the latest token from a ref or re-fetch it from context before making the retry request.
+Authentication items in this original implementation checklist were superseded by the local Auth.js integration. The backend refresh-token flow and its `API_URL` routes no longer exist; see [auth.md](auth.md).
 
 ---
 
 ## Missing Features
 
-### 3. Register page UI
-`app/api/auth/register/route.ts` exists (BFF endpoint) but there is no `/register` page in the frontend. Users cannot self-register through the UI.
+### Register page UI ✅
+The `/register` page registers a local database user through the Auth.js-backed server action. It does not call a backend BFF route.
 
-**Needed**: `app/(auth)/register/page.tsx` with name, email, and password fields, calling `POST /api/auth/register`.
-
-### 4. Google Login UI ✅
-Implemented in the 2026-02-28 plan. `GoogleOAuthProvider` wraps the root layout; `loginWithGoogle` added to `AuthContext`; Google button added to `/login`.
+### Google Login UI ✅
+The login page uses Auth.js Google sign-in when configured. The removed custom `/api/auth/google` proxy is not used.
 
 ### 5. Rich text / Markdown editor
 **File**: `components/content/content-form.tsx`
@@ -54,11 +38,6 @@ The `featuredImageUrl` field is a plain text input. There is no file picker or u
 Both pages fetch paginated data from the API (page/limit params exist) but no pagination controls (Prev / Next buttons, page numbers) are rendered. Users cannot navigate beyond the first page.
 
 **Needed**: A `<Pagination>` component using URL search params (`?page=2`) and Shadcn's `pagination` primitive.
-
-### 8. `AuthResponse` type missing `refreshToken`
-**File**: `lib/types/auth.ts`
-
-If the backend returns a separate `refreshToken` field alongside `accessToken`, the current `AuthResponse` interface does not model it. This is related to Bug #1.
 
 ---
 

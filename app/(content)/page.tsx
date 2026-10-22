@@ -7,30 +7,16 @@ import { FeaturedReading } from "@/components/landing/featured-reading"
 import { NewsList } from "@/components/landing/news-list"
 import { AnnouncementsStrip } from "@/components/landing/announcements-strip"
 
-export default async function HomePage() {
-  let recentArticles: ContentListItem[] = []
-  let featured: ContentListItem | null = null
-  let announcements: ContentListItem[] = []
+export const dynamic = "force-dynamic"
 
-  try {
-    const [articlesRes, announcementsRes] = await Promise.all([
-      getPublicContentList({
-        type: ContentType.article,
-        status: ContentStatus.published,
-        limit: 6,
-      }),
-      getPublicContentList({
-        type: ContentType.announcement,
-        status: ContentStatus.published,
-        limit: 3,
-      }),
-    ])
-    recentArticles = articlesRes.data
-    featured = articlesRes.data[0] ?? null
-    announcements = announcementsRes.data
-  } catch {
-    // API unavailable — render empty states
-  }
+export default async function HomePage() {
+  const [articlesRes, announcementsRes] = await Promise.all([
+    getPublicContentList({ type: ContentType.article, status: ContentStatus.published, limit: 6 }),
+    getPublicContentList({ type: ContentType.announcement, status: ContentStatus.published, limit: 3 }),
+  ])
+  const recentArticles: ContentListItem[] = articlesRes.data
+  const featured: ContentListItem | null = articlesRes.data[0] ?? null
+  const announcements: ContentListItem[] = announcementsRes.data
 
   return (
     <>

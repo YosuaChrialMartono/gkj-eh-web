@@ -1,19 +1,18 @@
-import { NextRequest } from "next/server"
-import { proxyToBackend } from "@/lib/api/proxy"
+import { NextRequest, NextResponse } from "next/server"
+import { createContent, getContentList } from "@/lib/api/content"
+import { ContentStatus, ContentType } from "@/lib/types/content"
+import { z } from "zod"
+import { contentErrorResponse } from "./errors"
 
 export async function GET(req: NextRequest) {
-  return proxyToBackend({
-    method: "GET",
-    path: "/content",
-    searchParams: req.nextUrl.searchParams,
-  })
+  const search = req.nextUrl.searchParams
+  const type = search.get("type"), status = search.get("status")
+  try {
+    return NextResponse.json(await getContentList({ page: search.has("page") ? Number(search.get("page")) : 1, limit: search.has("limit") ? Number(search.get("limit")) : 10, search: search.get("search") || undefined, type: type ? z.nativeEnum(ContentType).parse(type) : undefined, status: status ? z.nativeEnum(ContentStatus).parse(status) : undefined }))
+  } catch (error) { return contentErrorResponse(error) }
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.text()
-  return proxyToBackend({
-    method: "POST",
-    path: "/content",
-    body,
-  })
+  try { return NextResponse.json(await createContent(await req.json()), { status: 201 }) }
+  catch (error) { return contentErrorResponse(error) }
 }

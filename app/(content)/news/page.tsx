@@ -18,27 +18,21 @@ export const metadata = {
   title: "Berita — GKJ Eben Haezer",
   description: "Berita dan artikel terbaru dari GKJ Eben Haezer",
 }
+export const dynamic = "force-dynamic"
 
 export default async function NewsPage({ searchParams }: NewsPageProps) {
   const sp = await searchParams
   const page = sp.page ? Number(sp.page) : 1
   const limit = 12
 
-  let articles: ContentListItem[] = []
-  let totalPages = 1
-
-  try {
-    const result = await getPublicContentList({
-      type: ContentType.article,
-      status: ContentStatus.published,
-      page,
-      limit,
-    })
-    articles = result.data
-    totalPages = result.totalPages
-  } catch {
-    // API unavailable
-  }
+  const result = await getPublicContentList({
+    type: ContentType.article,
+    status: ContentStatus.published,
+    page,
+    limit,
+  })
+  const articles: ContentListItem[] = result.data
+  const totalPages = result.totalPages
 
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-6 py-12 md:px-8">

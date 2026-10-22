@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dateOnlySchema } from "./dates";
 
 const offeringWithEnvelopeSchema = z.object({
   rp: z.number().min(0, "Jumlah tidak boleh negatif"),
@@ -13,8 +14,8 @@ const attendancePairSchema = z.object({
 export const serviceReportSchema = z.object({
   // Header
   jenisKebaktian: z.string().min(1, "Jenis kebaktian wajib diisi"),
-  tanggal: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Format tanggal harus YYYY-MM-DD"),
-  waktu: z.string().regex(/^\d{2}:\d{2}$/, "Format waktu harus HH:MM"),
+  tanggal: dateOnlySchema,
+  waktu: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Format waktu harus HH:MM"),
 
   // Sections 1–3
   pelayanFirman: z.string().min(1, "Pelayan firman wajib diisi"),

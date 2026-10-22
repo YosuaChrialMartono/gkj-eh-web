@@ -2,10 +2,12 @@ import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { RoleManager } from "@/components/pelayan/role-manager"
-import { getRoles } from "@/lib/api/pelayan"
+import { listPelayanRoles } from "@/lib/server/pelayan"
+import { listPelayanPersons } from "@/lib/server/pelayan"
+import { PersonManager } from "@/components/pelayan/person-manager"
 
 export default async function PelayanRolesPage() {
-  const roles = await getRoles().catch(() => [])
+  const [roles, persons] = await Promise.all([listPelayanRoles(), listPelayanPersons()])
 
   return (
     <div className="flex flex-col gap-6">
@@ -21,6 +23,7 @@ export default async function PelayanRolesPage() {
       <div className="max-w-lg">
         <RoleManager initialRoles={roles} />
       </div>
+      <div className="max-w-lg"><PersonManager initialPersons={persons} /></div>
     </div>
   )
 }

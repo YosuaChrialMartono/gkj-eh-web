@@ -1,5 +1,7 @@
 # CMS Implementation Plan for GKJ Eben Haezer Web
 
+> Historical plan only. The integrated application now uses local PostgreSQL services and Auth.js. Its proposed `API_URL` bridge and proxy routes are obsolete and are not supported runtime interfaces.
+
 ## Context
 
 The app is a Next.js 16 site for GKJ Eben Haezer church. Currently all pages share a single sidebar layout defined in `app/layout.tsx`. The goal is to add a CMS that:

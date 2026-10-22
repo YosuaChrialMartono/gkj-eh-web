@@ -1,9 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import Link from "next/link";
-import { fetchReports } from "@/lib/api/reports-server";
+import { listReports } from "@/lib/server/reports/queries";
 import { Button } from "@/components/ui/button";
 import type { ServiceReport } from "@/types";
+import { DeleteReportButton } from "@/components/forms/service-report/delete-report-button";
 
 function formatRp(n: number) {
   return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(n);
@@ -12,7 +13,7 @@ function formatRp(n: number) {
 export default async function LaporanPage() {
   let reports: ServiceReport[] = [];
   try {
-    reports = await fetchReports();
+    reports = await listReports() as unknown as ServiceReport[];
   } catch {
     // handled below
   }
@@ -107,6 +108,7 @@ export default async function LaporanPage() {
                         >
                           Cetak
                         </Link>
+                        <DeleteReportButton id={r.id} />
                       </div>
                     </td>
                   </tr>

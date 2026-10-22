@@ -4,6 +4,9 @@ import { ArticleReader } from "@/components/reader/article-reader"
 import { injectHeadingIds } from "@/lib/content-toc"
 import { readingTime } from "@/lib/reading-time"
 import type { Metadata } from "next"
+import { AppError } from "@/lib/actions/result"
+
+export const dynamic = "force-dynamic"
 
 interface SlugPageProps {
   params: Promise<{ slug: string }>
@@ -13,9 +16,7 @@ export async function generateMetadata({ params }: SlugPageProps): Promise<Metad
   const { slug } = await params
   try {
     const content = await getContentBySlug(slug)
-    const description = content.bodyHtml
-      ? content.bodyHtml.replace(/<[^>]*>/g, "").slice(0, 160)
-      : content.body.slice(0, 160).replace(/\n/g, " ")
+    const description = (content.bodyHtml ?? "").replace(/<[^>]*>/g, "").slice(0, 160)
     return {
       title: `${content.title} — GKJ Eben Haezer`,
       description,
@@ -25,8 +26,9 @@ export async function generateMetadata({ params }: SlugPageProps): Promise<Metad
         ...(content.featuredImageUrl ? { images: [content.featuredImageUrl] } : {}),
       },
     }
-  } catch {
-    return { title: "GKJ Eben Haezer" }
+  } catch (error) {
+    if (error instanceof AppError && error.code === "NOT_FOUND") return { title: "GKJ Eben Haezer" }
+    throw error
   }
 }
 
@@ -36,11 +38,13 @@ export default async function SlugPage({ params }: SlugPageProps) {
   let content
   try {
     content = await getContentBySlug(slug)
-  } catch {
-    notFound()
+  } catch (error) {
+    if (error instanceof AppError && error.code === "NOT_FOUND") notFound()
+    throw error
   }
 
-  const rawHtml = content.bodyHtml ?? content.body
+  // Only the sanitizer-controlled HTML projection is permitted into the reader.
+  const rawHtml = content.bodyHtml ?? ""
   const { html, toc } = injectHeadingIds(rawHtml)
   const readingTimeMin = readingTime(rawHtml)
 

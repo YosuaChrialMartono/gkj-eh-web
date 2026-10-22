@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { fetchReports } from "@/lib/api/reports-server";
+import { listReports } from "@/lib/server/reports/queries";
 import { AttendanceChart } from "@/components/statistik/attendance-chart";
 import { OfferingChart } from "@/components/statistik/offering-chart";
 import type { ServiceReport } from "@/types";
@@ -26,7 +26,7 @@ function StatCard({
 export default async function StatistikPage() {
   let reports: ServiceReport[] = [];
   try {
-    reports = await fetchReports();
+    reports = await listReports() as unknown as ServiceReport[];
   } catch {
     // handled below
   }
