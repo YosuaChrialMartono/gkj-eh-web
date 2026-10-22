@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { getReport } from "@/lib/server/reports/queries";
 import type { ServiceReport } from "@/types";
+import { PrintReportButton } from "@/components/forms/service-report/print-report-button";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -31,12 +32,7 @@ export default async function PrintPage({ params }: Props) {
     <>
       {/* Print button — hidden in print */}
       <div className="flex justify-center gap-4 bg-zinc-100 p-4 print:hidden">
-        <button
-          onClick={() => window.print()}
-          className="rounded-lg bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700"
-        >
-          Cetak / Simpan PDF
-        </button>
+        <PrintReportButton />
         <a
           href={`/laporan/${id}`}
           className="rounded-lg border border-zinc-300 px-4 py-2 text-sm hover:bg-zinc-50"
