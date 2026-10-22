@@ -85,6 +85,22 @@ describe("CMS database acceptance", () => {
     expect(await cms.removeContent(publicItem.id)).toBe(true)
   })
 
+  it("serves publication mutations immediately without a stale public cache", async () => {
+    const cms = await import("@/lib/server/content/service")
+    state.session = { user: { id: ids.editor }, version: 0 }
+    const slug = `fresh-${randomUUID()}`
+    const created = await cms.createContent(draft(slug))
+    expect(await cms.getPublishedContentBySlug(slug)).toBeNull()
+    await cms.updateContent(created.id, { status: "published" })
+    expect(await cms.getPublishedContentBySlug(slug)).toMatchObject({ id: created.id, status: "published" })
+    expect((await cms.listPublicContent({ search: "Church news" })).data.map(item => item.id)).toContain(created.id)
+    await cms.updateContent(created.id, { status: "archived" })
+    expect(await cms.getPublishedContentBySlug(slug)).toBeNull()
+    expect((await cms.listPublicContent({ search: "Church news" })).data.map(item => item.id)).not.toContain(created.id)
+    expect(revalidatePath).toHaveBeenCalledWith(`/${slug}`)
+    await cms.removeContent(created.id)
+  })
+
   it("maps nested unique conflicts, validates IDs/pagination, and invalidates old slugs", async () => {
     const cms = await import("@/lib/server/content/service")
     state.session = { user: { id: ids.editor }, version: 0 }
