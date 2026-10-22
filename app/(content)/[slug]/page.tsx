@@ -40,7 +40,8 @@ export default async function SlugPage({ params }: SlugPageProps) {
     notFound()
   }
 
-  const rawHtml = content.bodyHtml ?? content.body
+  // Only the sanitizer-controlled HTML projection is permitted into the reader.
+  const rawHtml = content.bodyHtml ?? ""
   const { html, toc } = injectHeadingIds(rawHtml)
   const readingTimeMin = readingTime(rawHtml)
 
