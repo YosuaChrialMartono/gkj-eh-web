@@ -1,46 +1,25 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAccessToken } from "@/lib/auth/server-utils"
+import { AppError } from "@/lib/actions/result"
+import { requireCapability } from "@/lib/server/auth"
+import { persistImage } from "@/lib/server/media"
 
-const BASE = process.env.API_URL
+export const runtime = "nodejs"
 
 export async function POST(req: NextRequest) {
-  if (!BASE) {
-    return NextResponse.json({ message: "API_URL not configured" }, { status: 500 })
-  }
-
-  const token = await getAccessToken()
-  if (!token) {
-    return NextResponse.json({ message: "Not authenticated" }, { status: 401 })
-  }
-
-  const formData = await req.formData()
-  const url = new URL("/uploads", BASE.endsWith("/") ? BASE : BASE + "/")
-
-  let res: Response
   try {
-    res = await fetch(url, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    })
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Upstream fetch failed"
-    return NextResponse.json({ message }, { status: 502 })
+    const contentLength = Number(req.headers.get("content-length") || 0)
+    if (contentLength > 6 * 1024 * 1024) return NextResponse.json({ message: "Upload exceeds 5 MB" }, { status: 413 })
+    await requireCapability("media:write")
+    const form = await req.formData()
+    const file = form.get("file")
+    if (!(file instanceof File)) return NextResponse.json({ message: "Image file is required" }, { status: 400 })
+    const saved = await persistImage(file)
+    return NextResponse.json(saved, { status: 201 })
+  } catch (error) {
+    if (error instanceof AppError && error.code === "UNAUTHENTICATED") return NextResponse.json({ message: error.message }, { status: 401 })
+    if (error instanceof AppError && error.code === "FORBIDDEN") return NextResponse.json({ message: error.message }, { status: 403 })
+    if (error instanceof Error && ["Unsupported image type", "Image content does not match its media type", "Image must be between 1 byte and 5 MB"].includes(error.message)) return NextResponse.json({ message: error.message }, { status: 400 })
+    console.error("Image upload failed", error)
+    return NextResponse.json({ message: "Upload failed" }, { status: 500 })
   }
-
-  const text = await res.text()
-  if (!res.ok) {
-    try {
-      return NextResponse.json(JSON.parse(text), { status: res.status })
-    } catch {
-      return new NextResponse(text, { status: res.status })
-    }
-  }
-
-  const data = JSON.parse(text) as { url: string; filename: string }
-  const apiBase = BASE.replace(/\/$/, "")
-  return NextResponse.json({
-    url: `${apiBase}${data.url}`,
-    filename: data.filename,
-  })
 }

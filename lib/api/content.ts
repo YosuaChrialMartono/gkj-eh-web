@@ -1,5 +1,5 @@
-import { apiClient, authenticatedApiClient } from "./client"
-import { getAccessToken } from "@/lib/auth/server-utils"
+import { listDashboardContent, listPublicContent, getDashboardContent, getPublishedContentBySlug, createContent as insertContent, updateContent as patchContent, removeContent } from "@/lib/server/content/service"
+import { AppError } from "@/lib/actions/result"
 import type {
   Content,
   ContentListItem,
@@ -9,62 +9,43 @@ import type {
   PaginatedResponse,
 } from "@/lib/types"
 
-type RequestInitWithParams = RequestInit & {
-  params?: Record<string, string | number | boolean | undefined>
-}
-
-async function authed<T>(path: string, init?: RequestInitWithParams): Promise<T> {
-  const token = await getAccessToken()
-  if (!token) throw { message: "Not authenticated", status: 401 }
-  return authenticatedApiClient<T>(token, path, init)
-}
-
-// Public lists change rarely; let Next.js's data cache serve them for 60s.
-// This kills the loading.tsx flash on repeat nav between /news ↔ /sermons.
-const PUBLIC_CACHE = { next: { revalidate: 60 } } as RequestInit
-
 export async function getPublicContentList(
   params?: ContentListParams
 ): Promise<PaginatedResponse<ContentListItem>> {
-  return apiClient("/content/public", {
-    ...PUBLIC_CACHE,
-    params: params as Record<string, string | number | boolean | undefined>,
-  })
+  return listPublicContent(params)
 }
 
 export async function getContentBySlug(slug: string): Promise<Content> {
-  return apiClient(`/content/public/slug/${slug}`, PUBLIC_CACHE)
+  const result = await getPublishedContentBySlug(slug)
+  if (!result) throw new AppError("NOT_FOUND", "Content not found")
+  return result
 }
 
 export async function getContentList(
   params?: ContentListParams
 ): Promise<PaginatedResponse<ContentListItem>> {
-  return authed("/content", {
-    params: params as Record<string, string | number | boolean | undefined>,
-  })
+  return listDashboardContent(params)
 }
 
 export async function getContentById(id: string): Promise<Content> {
-  return authed(`/content/${id}`)
+  const result = await getDashboardContent(id)
+  if (!result) throw new AppError("NOT_FOUND", "Content not found")
+  return result
 }
 
 export async function createContent(input: ContentCreateInput): Promise<Content> {
-  return authed("/content", {
-    method: "POST",
-    body: JSON.stringify(input),
-  })
+  return insertContent(input)
 }
 
 export async function updateContent(
   id: string,
   input: ContentUpdateInput
 ): Promise<Content> {
-  return authed(`/content/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(input),
-  })
+  const result = await patchContent(id, input)
+  if (!result) throw new AppError("NOT_FOUND", "Content not found")
+  return result
 }
 
 export async function deleteContent(id: string): Promise<void> {
-  return authed(`/content/${id}`, { method: "DELETE" })
+  if (!await removeContent(id)) throw new AppError("NOT_FOUND", "Content not found")
 }
