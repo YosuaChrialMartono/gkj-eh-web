@@ -1,16 +1,5 @@
 import { test, expect, Page } from "@playwright/test"
-
-const CREDS = { email: "admin@gkj.test", password: "admin123" }
-
-async function login(page: Page) {
-  await page.goto("/login")
-  await page.locator("#email").fill(CREDS.email)
-  await page.locator("#password").fill(CREDS.password)
-  await page.getByRole("button", { name: /^masuk$|^login$/i }).click()
-  await page.waitForURL(/\/(dashboard|content|pelayan|laporan|title-converter)/, {
-    timeout: 10000,
-  })
-}
+import { login } from "./helpers/auth"
 
 async function hasHorizontalOverflow(page: Page): Promise<{
   overflow: boolean

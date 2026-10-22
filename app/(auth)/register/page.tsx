@@ -97,7 +97,7 @@ export default function RegisterPage() {
               autoComplete="new-password"
               minLength={12}
             />
-            <p className="text-xs text-muted-foreground">Minimal 8 karakter.</p>
+            <p className="text-xs text-muted-foreground">Minimal 12 karakter.</p>
           </div>
           <div className="flex flex-col gap-2">
             <Label htmlFor="confirm">Ulangi password</Label>
