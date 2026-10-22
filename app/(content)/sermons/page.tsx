@@ -18,27 +18,21 @@ export const metadata = {
   title: "Khotbah — GKJ Eben Haezer",
   description: "Khotbah-khotbah dari GKJ Eben Haezer",
 }
+export const dynamic = "force-dynamic"
 
 export default async function SermonsPage({ searchParams }: SermonsPageProps) {
   const sp = await searchParams
   const page = sp.page ? Number(sp.page) : 1
   const limit = 12
 
-  let sermons: ContentListItem[] = []
-  let totalPages = 1
-
-  try {
-    const result = await getPublicContentList({
-      type: ContentType.sermon,
-      status: ContentStatus.published,
-      page,
-      limit,
-    })
-    sermons = result.data
-    totalPages = result.totalPages
-  } catch {
-    // API unavailable
-  }
+  const result = await getPublicContentList({
+    type: ContentType.sermon,
+    status: ContentStatus.published,
+    page,
+    limit,
+  })
+  const sermons: ContentListItem[] = result.data
+  const totalPages = result.totalPages
 
   return (
     <div className="mx-auto flex max-w-[1180px] flex-col gap-8 px-6 py-12 md:px-8">
