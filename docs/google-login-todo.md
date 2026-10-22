@@ -1,5 +1,7 @@
 # Google Login — Re-implementation Reference
 
+> Historical implementation notes. The current login page uses Auth.js Google sign-in when configured; the custom `/api/auth/google` backend proxy described below has been removed and is not a supported endpoint.
+
 Disabled on 2026-02-28. The BFF route (`app/api/auth/google/route.ts`) is already in place.
 Re-enable once a Google Cloud project and OAuth Client ID are ready.
 

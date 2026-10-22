@@ -1,5 +1,7 @@
 # Register Page Design
 
+> Historical design; superseded by the local Auth.js registration server action. The proposed `/api/auth/register` BFF endpoint no longer exists.
+
 **Date:** 2026-04-03
 
 ## Overview

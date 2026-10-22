@@ -83,12 +83,11 @@ lib/
 
 | Order | File | Purpose |
 |-------|------|---------|
-| 1 | `lib/types/auth.ts` | Auth types (User, LoginInput, etc.) |
-| 2 | `lib/api/auth.ts` | Auth API functions (login, register, refresh) |
-| 3 | `app/api/auth/login/route.ts` | POST login endpoint |
-| 4 | `app/api/auth/refresh/route.ts` | POST refresh token endpoint |
-| 5 | `app/api/auth/logout/route.ts` | POST logout endpoint |
-| 6 | `app/(auth)/login/page.tsx` | Login page UI |
+| 1 | `auth.ts` | Auth.js credentials/optional Google providers and session policy |
+| 2 | `lib/server/auth/` | Local credential verification and session authorization |
+| 3 | `app/api/auth/[...nextauth]/route.ts` | Auth.js sign-in, callback, and session endpoints |
+| 4 | `app/api/auth/current/route.ts` | Current local session endpoint |
+| 5 | `app/(auth)/login/page.tsx` | Login page UI |
 
 ### Phase 3: App Structure & Navigation
 
@@ -118,7 +117,7 @@ lib/
 | Order | File | Purpose |
 |-------|------|---------|
 | 1 | `lib/types/pelayan.ts` | Pelayan types (Service, Role) |
-| 2 | `lib/api/pelayan.ts` | Pelayan API functions |
+| 2 | `lib/server/pelayan/` | Local Pelayan queries and server actions |
 | 3 | `components/pelayan/pelayan-table.tsx` | Schedule table |
 | 4 | `components/pelayan/add-service-dialog.tsx` | Add service dialog |
 | 5 | `components/pelayan/role-manager.tsx` | Role management |

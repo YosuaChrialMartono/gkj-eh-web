@@ -21,24 +21,21 @@ Next.js 16.1 (App Router) for GKJ Eben Haezer church. React 19.2, TypeScript (st
 
 - `(auth)/` — `login`, `register`. Public auth pages.
 - `(content)/` — public site: home (`/`), `news`, `sermons`, dynamic `[slug]` article pages. Layout = top-nav header + footer.
-- `(dashboard)/` — gated CMS: `dashboard`, `content` (+ `content/new`), `laporan` (+ `[id]`, `new`), `pelayan` (+ `roles`), `statistik`, `title-converter`. Layout = `SidebarProvider` + `AppSidebar` + breadcrumb + color-mode toggle. Server-side gate: redirects to `/login` if `refresh_token` cookie missing.
+- `(dashboard)/` — gated CMS: `dashboard`, `content` (+ `content/new`), `laporan` (+ `[id]`, `new`), `pelayan` (+ `roles`), `statistik`, `title-converter`. Layout = `SidebarProvider` + `AppSidebar` + breadcrumb + color-mode toggle. Server-side gate uses the local Auth.js session and redirects to `/login` when unauthenticated.
 
 Root `app/layout.tsx` wraps everything in `ThemeProvider` (next-themes) + `AuthProvider` + `<Toaster />`. **`SidebarProvider` lives in `(dashboard)/layout.tsx` only**, not the root.
 
 ## Auth
 
-- Client state: `lib/auth/auth-context.tsx` — `AuthProvider` exposes `useAuth()` with `user`, `accessToken`, `login`, `register`, `logout`, `refreshAuth`. Calls BFF routes under `/api/auth/*`.
-- BFF routes: `app/api/auth/{login,logout,refresh,register}/route.ts`. Refresh token kept as httpOnly cookie; access token stays in memory.
-- Server-side gate: `(dashboard)/layout.tsx` reads `refresh_token` cookie via `next/headers`.
-- `lib/auth/server-utils.ts` — server-side token helpers (currently stub).
+- Client state: `lib/auth/auth-context.tsx` — `AuthProvider` exposes `useAuth()` with `user`, `login`, `register`, `logout`, and `loginWithGoogle`. Credentials and optional Google sign-in use Auth.js.
+- Auth.js handler: `app/api/auth/[...nextauth]/route.ts`; current-session endpoint: `app/api/auth/current/route.ts`.
+- Server-side gate and permissions use `auth()` through `lib/server/auth/`; local credentials are checked against the application database.
 
 ## API layer
 
-`lib/api/`:
-- `client.ts` — `apiClient<T>` + `authenticatedApiClient<T>(token, ...)`. Reads `process.env.API_URL`, throws if unset. Returns parsed JSON or `ApiError` (`{ message, status, errors? }`).
-- Domain modules: `auth.ts`, `content.ts`, `pelayan.ts`, `reports.ts`. Re-exported from `lib/api/index.ts`.
-- `mock-store.ts` — in-memory mock store (dev/preview).
-- App's own API routes (BFF): `app/api/{auth,members,reports}/...`.
+`lib/api/content.ts` adapts the local content services for current page and route consumers. Domain writes and reads are backed by local server modules and PostgreSQL; report and Pelayan workflows use `lib/server/reports/` and `lib/server/pelayan/`.
+
+Current application routes live under `app/api/` (Auth.js, current session, content, upload, and media). Removed NestJS proxy routes are not part of the supported application API.
 
 `hooks/use-api.ts` — client-side fetch hook.
 
@@ -70,5 +67,5 @@ Tailwind utilities + CSS variables in `app/globals.css` (OKLCH). Variants via CV
 - Package manager: **pnpm** (not npm/yarn).
 - Path alias: `@/*` → project root. Shadcn aliases: `@/components`, `@/components/ui`, `@/lib`, `@/lib/utils`, `@/hooks`.
 - Shadcn config: `components.json` (style: new-york, baseColor: neutral, icon library: lucide).
-- Env: `API_URL` required for upstream API calls.
+- Local server configuration is validated in `lib/server/env.ts`; no `API_URL` bridge is used by the supported application flows.
 - `docs/` holds plans and notes (auth, CMS, Tiptap, todos) — consult before large feature work.
