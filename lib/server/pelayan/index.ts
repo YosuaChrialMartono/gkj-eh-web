@@ -1,5 +1,5 @@
 import "server-only"
-import { and, asc, eq, gte, lt, sql } from "drizzle-orm"
+import { and, asc, eq, gte, inArray, lt, notInArray, sql } from "drizzle-orm"
 import { z } from "zod"
 import { getDb } from "@/lib/server/db"
 import { pelayanAssignments, pelayanPersons, pelayanRoles, pelayanServices } from "@/lib/server/db/schema"
@@ -26,7 +26,7 @@ export async function getPelayanMonth(month: string) {
     db.select().from(pelayanServices).where(and(gte(pelayanServices.date, start), lt(pelayanServices.date, end))).orderBy(asc(pelayanServices.date)),
   ])
   const ids = services.map((s) => s.id)
-  const assignments = ids.length ? await db.select().from(pelayanAssignments).where(sql`${pelayanAssignments.serviceId} = ANY(${ids}::uuid[])`) : []
+  const assignments = ids.length ? await db.select().from(pelayanAssignments).where(inArray(pelayanAssignments.serviceId, ids)) : []
   return { roles, persons, services, assignments }
 }
 
@@ -81,7 +81,7 @@ export async function replacePelayanAssignments(serviceId: string, entries: Arra
     if (!service) throw new Error("Layanan tidak ditemukan")
     for (const entry of data) if (entry.pelayanName) await tx.insert(pelayanAssignments).values({ serviceId: sid, roleId: entry.roleId, pelayanName: entry.pelayanName }).onConflictDoUpdate({ target: [pelayanAssignments.serviceId, pelayanAssignments.roleId], set: { pelayanName: entry.pelayanName } })
     const keep = data.filter((entry) => entry.pelayanName).map((entry) => entry.roleId)
-    if (keep.length) await tx.delete(pelayanAssignments).where(and(eq(pelayanAssignments.serviceId, sid), sql`${pelayanAssignments.roleId} <> ALL(${keep}::uuid[])`))
+    if (keep.length) await tx.delete(pelayanAssignments).where(and(eq(pelayanAssignments.serviceId, sid), notInArray(pelayanAssignments.roleId, keep)))
     else await tx.delete(pelayanAssignments).where(eq(pelayanAssignments.serviceId, sid))
     return true
   })
