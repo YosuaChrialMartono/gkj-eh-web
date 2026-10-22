@@ -13,7 +13,7 @@ import { TabPetugas } from "./tab-petugas";
 import { TabEvaluasi } from "./tab-evaluasi";
 import { serviceReportSchema, type ServiceReportFormValues } from "@/lib/schemas/service-report";
 import { defaultFormValues, reportToFormValues } from "@/lib/form-defaults";
-import { createReport, updateReport } from "@/lib/api/reports";
+import { saveReport } from "@/lib/server/reports/actions";
 import type { ServiceReport } from "@/types";
 
 const TABS = [
@@ -64,11 +64,8 @@ export function ServiceReportForm({ report, members }: ServiceReportFormProps) {
     setSaving(true);
     setError(null);
     try {
-      if (report) {
-        await updateReport(report.id, data);
-      } else {
-        await createReport(data);
-      }
+      const result = await saveReport(data, report?.id);
+      if (!result.ok) throw new Error(result.error.message);
       router.push("/laporan");
       router.refresh();
     } catch (err) {

@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { fetchReport } from "@/lib/api/reports-server";
+import { getReport } from "@/lib/server/reports/queries";
 import type { ServiceReport } from "@/types";
 
 interface Props {
@@ -20,7 +20,7 @@ export default async function PrintPage({ params }: Props) {
   const { id } = await params;
   let report: ServiceReport;
   try {
-    report = await fetchReport(id);
+    report = await getReport(id) as unknown as ServiceReport;
   } catch {
     notFound();
   }
