@@ -24,8 +24,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Check, ChevronsUpDown } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { useAuth } from "@/lib/auth/auth-context"
-import type { PelayanRole, PelayanPerson, PelayanAssignment, PelayanService } from "@/lib/types"
+import { savePelayanService, removePelayanService, replacePelayanAssignments, createPelayanPerson } from "@/lib/server/pelayan/actions"
+import type { PelayanRole, PelayanPerson, PelayanAssignment } from "@/lib/types"
 import type { ServiceRow } from "@/lib/pelayan-utils"
 import { isVirtualRow } from "@/lib/pelayan-utils"
 
@@ -122,7 +122,6 @@ export function ServiceDetailDialog({
   onClose,
   onDeleted,
 }: ServiceDetailDialogProps) {
-  const { accessToken } = useAuth()
   const isVirtual = isVirtualRow(serviceRow)
 
   const [label, setLabel] = useState(isVirtual ? "" : (serviceRow.label ?? ""))
@@ -141,36 +140,24 @@ export function ServiceDetailDialog({
     try {
       let serviceId: string
       if (isVirtual) {
-        const res = await fetch("/api/pelayan/services", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-          body: JSON.stringify({ date: serviceRow.date, label: label || undefined, isExtra: false }),
-        })
-        if (!res.ok) throw new Error("Gagal membuat data ibadah")
-        const svc = await res.json() as PelayanService
-        serviceId = svc.id
+        const result = await savePelayanService({ date: serviceRow.date, label: label || undefined, isExtra: false })
+        if (!result.ok) throw new Error(result.error.message)
+        serviceId = result.data.id
       } else {
         serviceId = serviceRow.id
         if (label !== (serviceRow.label ?? "")) {
-          await fetch(`/api/pelayan/services/${serviceId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-            body: JSON.stringify({ date: serviceRow.date, label: label || undefined, isExtra: serviceRow.isExtra }),
-          })
+          const result = await savePelayanService({ date: serviceRow.date, label: label || undefined, isExtra: serviceRow.isExtra }, serviceId)
+          if (!result.ok) throw new Error(result.error.message)
         }
       }
-
-      await Promise.all(
-        roles
-          .filter((r) => assignments[r.id]?.trim())
-          .map((r) =>
-            fetch("/api/pelayan/assignments", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-              body: JSON.stringify({ serviceId, roleId: r.id, pelayanName: assignments[r.id] }),
-            })
-          )
-      )
+      for (const name of Object.values(assignments)) {
+        if (name?.trim() && !persons.some((person) => person.name.trim().toLowerCase() === name.trim().toLowerCase())) {
+          const result = await createPelayanPerson(name)
+          if (!result.ok) throw new Error(result.error.message)
+        }
+      }
+      const result = await replacePelayanAssignments(serviceId, roles.map((role) => ({ roleId: role.id, pelayanName: assignments[role.id] || undefined })))
+      if (!result.ok) throw new Error(result.error.message)
 
       toast.success("Jadwal berhasil disimpan")
       onClose()
@@ -185,10 +172,8 @@ export function ServiceDetailDialog({
     if (isVirtual) return
     setDeleting(true)
     try {
-      await fetch(`/api/pelayan/services/${serviceRow.id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${accessToken}` },
-      })
+      const result = await removePelayanService(serviceRow.id)
+      if (!result.ok) throw new Error(result.error.message)
       toast.success("Layanan dihapus")
       onDeleted?.(serviceRow.date)
       onClose()

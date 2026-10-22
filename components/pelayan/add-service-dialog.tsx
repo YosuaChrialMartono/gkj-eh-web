@@ -14,14 +14,13 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useAuth } from "@/lib/auth/auth-context"
+import { savePelayanService } from "@/lib/server/pelayan/actions"
 
 interface AddServiceDialogProps {
   existingDates: string[]
 }
 
 export function AddServiceDialog({ existingDates }: AddServiceDialogProps) {
-  const { accessToken } = useAuth()
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState("")
@@ -39,15 +38,8 @@ export function AddServiceDialog({ existingDates }: AddServiceDialogProps) {
     }
     setSaving(true)
     try {
-      const res = await fetch("/api/pelayan/services", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
-        body: JSON.stringify({ date, label: label || undefined, isExtra: true }),
-      })
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ message: "Gagal menyimpan" }))
-        throw new Error(err.message)
-      }
+      const result = await savePelayanService({ date, label: label || undefined, isExtra: true })
+      if (!result.ok) throw new Error(result.error.message)
       toast.success("Layanan tambahan berhasil ditambahkan")
       setOpen(false)
       setDate("")
