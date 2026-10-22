@@ -31,8 +31,8 @@ export default function RegisterPage() {
     e.preventDefault()
     setError(null)
 
-    if (password.length < 8) {
-      setError("Password minimal 8 karakter.")
+    if (password.length < 12) {
+      setError("Password minimal 12 karakter.")
       return
     }
     if (password !== confirm) {
@@ -95,7 +95,7 @@ export default function RegisterPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete="new-password"
-              minLength={8}
+              minLength={12}
             />
             <p className="text-xs text-muted-foreground">Minimal 8 karakter.</p>
           </div>

@@ -1,103 +1,51 @@
 "use client"
-
 import { createContext, use, useState, useEffect, useCallback } from "react"
+import { signIn } from "next-auth/react"
+import { registerAction, logoutAction } from "@/lib/server/auth/actions"
 import type { User } from "@/lib/types"
 
 interface AuthContextValue {
   user: User | null
-  accessToken: string | null
+  /** Deprecated: no Nest bearer token exists in a local Auth.js session. */
+  accessToken: null
   isLoading: boolean
   login: (email: string, password: string) => Promise<void>
-  loginWithGoogle: (credential: string) => Promise<void>
+  loginWithGoogle: (redirectTo?: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   refreshAuth: () => Promise<boolean>
 }
-
 const AuthContext = createContext<AuthContextValue | null>(null)
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [accessToken, setAccessToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-
-  const refreshAuth = useCallback(async (): Promise<boolean> => {
+  const refreshAuth = useCallback(async () => {
     try {
-      const res = await fetch("/api/auth/refresh", { method: "POST" })
-      if (!res.ok) return false
-      const data = await res.json() as { user: User; accessToken: string }
-      setUser(data.user)
-      setAccessToken(data.accessToken)
-      return true
-    } catch {
-      return false
-    }
+      const response = await fetch("/api/auth/current", { cache: "no-store" })
+      const current = response.ok ? await response.json() as User : null
+      setUser(current)
+      return !!current
+    } catch { setUser(null); return false }
   }, [])
-
   useEffect(() => {
+    // Session refresh synchronizes with an external HTTP source, not derived render state.
     // eslint-disable-next-line react-hooks/set-state-in-effect
-    refreshAuth().finally(() => setIsLoading(false))
+    void refreshAuth().finally(() => setIsLoading(false))
   }, [refreshAuth])
-
-  const loginWithGoogle = useCallback(async (credential: string) => {
-    const res = await fetch("/api/auth/google", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ credential }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Google login failed" }))
-      throw new Error(err.message ?? "Google login failed")
-    }
-    const data = await res.json() as { user: User; accessToken: string }
-    setUser(data.user)
-    setAccessToken(data.accessToken)
-  }, [])
-
-  const login = useCallback(async (email: string, password: string) => {
-    const res = await fetch("/api/auth/login", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Login failed" }))
-      throw new Error(err.message ?? "Login failed")
-    }
-    const data = await res.json() as { user: User; accessToken: string }
-    setUser(data.user)
-    setAccessToken(data.accessToken)
-  }, [])
-
-  const register = useCallback(async (name: string, email: string, password: string) => {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-    })
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ message: "Pendaftaran gagal" }))
-      throw new Error(err.message ?? "Pendaftaran gagal")
-    }
-    const data = await res.json() as { user: User; accessToken: string }
-    setUser(data.user)
-    setAccessToken(data.accessToken)
-  }, [])
-
-  const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" })
-    setUser(null)
-    setAccessToken(null)
-  }, [])
-
-  return (
-    <AuthContext value={{ user, accessToken, isLoading, login, loginWithGoogle, register, logout, refreshAuth }}>
-      {children}
-    </AuthContext>
-  )
+  async function login(email: string, password: string) {
+    const result = await signIn("credentials", { email, password, redirect: false })
+    if (result?.error || !await refreshAuth()) throw new Error("Invalid credentials")
+  }
+  async function register(name: string, email: string, password: string) {
+    const result = await registerAction({ name, email, password })
+    if (!result.ok) throw new Error(result.error.message)
+    await login(email, password)
+  }
+  async function loginWithGoogle(redirectTo = "/dashboard") { await signIn("google", { redirectTo }) }
+  async function logout() { setUser(null); await logoutAction() }
+  return <AuthContext value={{ user, accessToken: null, isLoading, login, loginWithGoogle, register, logout, refreshAuth }}>{children}</AuthContext>
 }
-
-export function useAuth(): AuthContextValue {
+export function useAuth() {
   const ctx = use(AuthContext)
   if (!ctx) throw new Error("useAuth must be used within AuthProvider")
   return ctx

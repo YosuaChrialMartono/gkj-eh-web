@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation"
-import { cookies } from "next/headers"
+import { getCurrentUser } from "@/lib/server/auth"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ColorModeToggle } from "@/components/color-mode-toggle"
 import { Separator } from "@/components/ui/separator"
@@ -15,8 +15,8 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const token = (await cookies()).get("refresh_token")?.value
-  if (!token) {
+  const user = await getCurrentUser()
+  if (!user) {
     redirect("/login?from=/dashboard")
   }
 
