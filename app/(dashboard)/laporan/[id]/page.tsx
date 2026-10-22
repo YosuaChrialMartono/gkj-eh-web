@@ -2,8 +2,9 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { fetchReport } from "@/lib/api/reports-server";
+import { getReport } from "@/lib/server/reports/queries";
 import { Button } from "@/components/ui/button";
+import type { ServiceReport } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -37,9 +38,9 @@ function formatRp(n: number) {
 
 export default async function LaporanDetailPage({ params }: Props) {
   const { id } = await params;
-  let report;
+  let report: ServiceReport;
   try {
-    report = await fetchReport(id);
+    report = await getReport(id) as unknown as ServiceReport;
   } catch {
     notFound();
   }

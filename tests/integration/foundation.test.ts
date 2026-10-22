@@ -83,4 +83,33 @@ describe("fresh PostgreSQL foundation", () => {
     try { await expect(db.insert(s.pelayanPersons).values({ name: ` ${name.toUpperCase()} ` })).rejects.toThrow() }
     finally { await db.delete(s.pelayanPersons).where(eq(s.pelayanPersons.id, person.id)) }
   })
+  it("persists validated full report replacements and protects report CRUD", async () => {
+    const { defaultFormValues } = await import("@/lib/form-defaults")
+    const { saveReport, deleteReport } = await import("@/lib/server/reports/actions")
+    const { listReports, getReport } = await import("@/lib/server/reports/queries")
+    const form = { ...defaultFormValues(), jenisKebaktian: "Minggu", pelayanFirman: "Pdt. Test" }
+    const anonymous = await saveReport(form)
+    expect(anonymous).toMatchObject({ ok: false, error: { code: "UNAUTHENTICATED" } })
+    state.session = { user: { id: userId }, version: 0 }
+    await db.update(s.users).set({ role: "editor" }).where(eq(s.users.id, userId))
+    const forgedId = randomUUID()
+    const created = await saveReport({ ...form, id: forgedId, createdAt: "forged", updatedAt: "forged" })
+    expect(created.ok).toBe(true)
+    if (!created.ok) throw new Error("expected create success")
+    const id = created.data.id
+    try {
+      expect(created.data.id).not.toBe(forgedId)
+      expect((await getReport(id) as unknown as { pelayanFirman: string }).pelayanFirman).toBe("Pdt. Test")
+      const changed = await saveReport({ ...form, tanggal: "2026-10-23", pelayanFirman: "Pdt. Replacement" }, id)
+      expect(changed.ok).toBe(true)
+      expect((await getReport(id) as unknown as { pelayanFirman: string }).pelayanFirman).toBe("Pdt. Replacement")
+      expect((await listReports()).some(row => row.id === id)).toBe(true)
+      expect(await saveReport({ ...form, tanggal: "bad-date" }, id)).toMatchObject({ ok: false, error: { code: "VALIDATION" } })
+      expect(await deleteReport(id)).toEqual({ ok: true, data: { id } })
+      await expect(getReport(id)).rejects.toMatchObject({ code: "NOT_FOUND" })
+    } finally {
+      await db.delete(s.reports).where(eq(s.reports.id, id))
+      state.session = null
+    }
+  })
 })

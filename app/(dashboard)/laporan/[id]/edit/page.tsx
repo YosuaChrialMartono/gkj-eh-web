@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { notFound } from "next/navigation";
-import { fetchReport, fetchMembers } from "@/lib/api/reports-server";
+import { getReport } from "@/lib/server/reports/queries";
+import { listMemberNames } from "@/lib/server/members";
 import { ServiceReportForm } from "@/components/forms/service-report/form-tabs";
+import type { ServiceReport } from "@/types";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -11,9 +13,9 @@ interface Props {
 export default async function EditLaporanPage({ params }: Props) {
   const { id } = await params;
 
-  let report, members: string[];
+  let report: ServiceReport, members: string[];
   try {
-    [report, members] = await Promise.all([fetchReport(id), fetchMembers()]);
+    [report, members] = await Promise.all([getReport(id) as unknown as Promise<ServiceReport>, listMemberNames()]);
   } catch {
     notFound();
   }
