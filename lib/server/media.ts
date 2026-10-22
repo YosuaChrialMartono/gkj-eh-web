@@ -13,9 +13,10 @@ const mediaTypes = {
 export type MediaType = keyof typeof mediaTypes
 
 function storageDirectory() {
-  const configured = process.env.MEDIA_STORAGE_DIR
-  if (configured && !configured.startsWith("/")) throw new Error("MEDIA_STORAGE_DIR must be an absolute path")
-  return resolve(configured || "/var/lib/gkj-eh-web/media")
+  const configured = process.env.UPLOAD_DIR
+  if (configured && !configured.startsWith("/")) throw new Error("UPLOAD_DIR must be an absolute path")
+  // Node runtime must mount this path on persistent writable storage; container-local files are not durable.
+  return resolve(configured || "/var/lib/gkj/media")
 }
 
 export async function persistImage(file: File) {
