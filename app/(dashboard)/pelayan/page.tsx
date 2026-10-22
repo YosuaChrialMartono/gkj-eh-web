@@ -24,7 +24,12 @@ function PelayanTableSkeleton() {
 
 async function PelayanTableLoader({ month }: { month: string }) {
   const { roles, services, persons, assignments } = await getPelayanMonth(month)
-  const assignmentsByService = Object.groupBy(assignments, (assignment) => assignment.serviceId)
+  const assignmentsByService = assignments.reduce<Record<string, typeof assignments>>((grouped, assignment) => {
+    const serviceAssignments = grouped[assignment.serviceId] ?? []
+    serviceAssignments.push(assignment)
+    grouped[assignment.serviceId] = serviceAssignments
+    return grouped
+  }, {})
 
   return (
     <PelayanTable
@@ -32,7 +37,7 @@ async function PelayanTableLoader({ month }: { month: string }) {
       services={services.map((service) => ({ ...service, label: service.label ?? undefined }))}
       month={month}
       persons={persons}
-      assignmentsByService={Object.fromEntries(Object.entries(assignmentsByService).map(([key, value]) => [key, value ?? []]))}
+      assignmentsByService={assignmentsByService}
     />
   )
 }
